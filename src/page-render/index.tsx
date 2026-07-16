@@ -1,9 +1,17 @@
 import React from "react";
 import WatermarkOverlay from "./WatermarkOverlay";
-import { v4 as uuidv4 } from "uuid";
 import ExeBlockRender from "../exe-block-render";
 import { isColorWatermark, isImageWatermark } from "../type-guard";
 import BlockRender from "../block-render";
+
+// uuid's v4() requires crypto.getRandomValues, which Hermes doesn't provide
+// without installing a native polyfill module (react-native-get-random-values)
+// and rebuilding the app. These two ids are just per-render signature-block
+// tracking keys, not anything security-sensitive, so a plain non-crypto id
+// avoids that dependency entirely.
+function renderPassId(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
 interface Props {
   config: any;
   headerImage?: any;
@@ -97,9 +105,8 @@ export const PageRender: React.FC<Props> = (props) => {
   console.log(headerImage, "headerImageheaderImage")
   const dynamicCalculateHeight = config?.header?.height;
   const dynamicCalculateFooter = config?.footer?.height;
-  //@ts-ignore
-  const getCurrentFooterSign = uuidv4();
-  const getCurrentFooterSignHeader = uuidv4();
+  const getCurrentFooterSign = renderPassId();
+  const getCurrentFooterSignHeader = renderPassId();
   console.log(getCurrentFooterSign, getCurrentFooterSignHeader, "getCurrentFooterSignHeadergetCurrentFooterSignHeader")
   console.log(getCurrentFooterSign, "getCurrentFooterSigngetCurrentFooterSigngetCurrentFooterSigngetCurrentFooterSign")
 

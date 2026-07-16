@@ -39,6 +39,13 @@ export function renderReportHtml(props: PrintMapperProps): string {
   const previousActFlag = globalScope.IS_REACT_ACT_ENVIRONMENT;
   globalScope.IS_REACT_ACT_ENVIRONMENT = true;
 
+  // React's own escape hatch for using test-renderer inside React Native
+  // outside of Jest: silences its "is deprecated" console.error (which RN
+  // surfaces as a red ERROR log, not a mere warning) and switches it to the
+  // non-concurrent-only render mode meant for this exact use case.
+  const previousRNTestFlag = globalScope.IS_REACT_NATIVE_TEST_ENVIRONMENT;
+  globalScope.IS_REACT_NATIVE_TEST_ENVIRONMENT = true;
+
   let renderer: TestRenderer.ReactTestRenderer;
   try {
     TestRenderer.act(() => {
@@ -46,6 +53,7 @@ export function renderReportHtml(props: PrintMapperProps): string {
     });
   } finally {
     globalScope.IS_REACT_ACT_ENVIRONMENT = previousActFlag;
+    globalScope.IS_REACT_NATIVE_TEST_ENVIRONMENT = previousRNTestFlag;
   }
 
   const markup = serializeNode(renderer!.toJSON() as any);

@@ -9,5 +9,5 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ["react", "react-dom", "react-native", "react-native-webview", "expo-print"],
+  external: ["react", "react-test-renderer", "react-native", "react-native-webview", "expo-print"],
 });

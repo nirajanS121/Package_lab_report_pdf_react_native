@@ -8,8 +8,11 @@ report engine, two output modes:
   `PageRender`, block renderers) rendered directly in the DOM, exactly as
   `kiosk-frontend-app` does today.
 - **React Native** — `renderReportHtml(props)` runs the *same* components
-  through `react-dom/server`'s `renderToStaticMarkup`, which is pure string
-  output with no DOM dependency, so it also runs inside Hermes/JSC. Feed the
+  through `react-test-renderer` and serializes the resulting element tree to
+  an HTML string. `react-dom/server` was tried first, but its browser build
+  assumes browser/Node globals (`MessageChannel` among them) that Hermes/JSC
+  don't provide; `react-test-renderer` has no host-environment dependencies
+  by design, so it runs the same way in Hermes as anywhere else. Feed the
   resulting HTML string to a WebView for preview or straight to a native
   print API.
 
@@ -22,7 +25,7 @@ npm install lab-pdf-view-react-native
 For the React Native helpers (`./native` subpath) also install:
 
 ```
-npm install react-native-webview expo-print
+npm install react-native-webview expo-print react-test-renderer
 ```
 
 ## Usage — Web / Electron (same as before)

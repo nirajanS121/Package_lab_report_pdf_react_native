@@ -26,11 +26,3 @@ export const createImageBlock = (props: Props): ImageBlockProps => {
 export function isImageBlock(block: BlockProps): block is ImageBlockProps {
   return block.type === "image";
 }
-
-export function isPathoTableBlock(block: BlockProps): block is ImageBlockProps {
-  return block.type === "table";
-}
-
-export function isDischargeDetail(block: BlockProps): block is ImageBlockProps {
-  return block.type === "estimate_bill_detail";
-}

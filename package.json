@@ -1,6 +1,6 @@
 {
   "name": "lab-pdf-view-react-native",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Lab report layout engine — renders a report JSON/template into React elements (web/Electron) or a static HTML string (React Native via WebView/expo-print).",
   "type": "module",
   "main": "./dist/index.cjs",

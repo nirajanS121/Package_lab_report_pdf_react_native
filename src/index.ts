@@ -6,6 +6,7 @@ export { default as BlockRender } from "./block-render";
 
 export * from "./type-guard";
 export * from "./helper";
+export { renderReportPdf } from "./pdf/renderReportPdf";
 
 import TestRenderer from "react-test-renderer";
 import React from "react";

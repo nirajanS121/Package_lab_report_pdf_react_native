@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { WebView } from "react-native-webview";
 import * as Print from "expo-print";
-import { renderReportHtml } from "./index";
+import { File, Paths } from "expo-file-system";
+import { renderReportHtml, renderReportPdf } from "./index";
 import type { PrintMapperProps } from "./ReportPrintMapper";
 
 export interface ReportWebViewProps extends PrintMapperProps {
@@ -27,36 +28,36 @@ export const ReportWebView: React.FC<ReportWebViewProps> = ({ style, ...reportPr
   return <WebView originWhitelist={["*"]} source={{ html }} style={style} />;
 };
 
-// renderReportHtml already awaits several ticks internally (waiting for
-// react-test-renderer's scheduled commit to finish), so the JS thread has
-// already yielded repeatedly by the time we get the html back. Still worth
-// one more explicit yield here in case that changes — a native print call
-// immediately after heavy synchronous work can get silently dropped on some
-// Android devices.
-function yieldToEventLoop(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 0));
+// Both printReport and reportToPdf render via renderReportPdf (pdf-lib —
+// direct PDF construction, no WebView) rather than going through
+// expo-print's `{ html }` option. That option internally loads the HTML in
+// a hidden WebView and calls Android's own `WebView.createPrintDocumentAdapter()`
+// to rasterize it — measured at a fixed ~32s regardless of content size or
+// document complexity, on real hardware, because that Android API itself is
+// slow (confirmed: react-native-html-to-pdf, an entirely different library,
+// uses that exact same API and even ships a 30s timeout around it).
+//
+// expo-print's `{ uri }` option is a different code path
+// (PrintDocumentAdapter constructed directly from an existing file) that
+// never touches WebView/createPrintDocumentAdapter at all — so once we have
+// a PDF file already on disk, handing expo-print that file's uri keeps the
+// "send to an actual printer" use case fast too.
+async function writePdfToFile(props: PrintMapperProps, fileName: string): Promise<string> {
+  const bytes = await renderReportPdf(props);
+  const file = new File(Paths.cache, fileName);
+  if (file.exists) file.delete();
+  file.create();
+  file.write(bytes);
+  return file.uri;
 }
 
 /** Sends the report straight to a printer via the native print dialog (no on-screen preview). */
 export async function printReport(props: PrintMapperProps) {
-  const renderStart = Date.now();
-  const html = await renderReportHtml(props);
-  console.log(`[lab-pdf-view] renderReportHtml took ${Date.now() - renderStart}ms, html length ${html.length}`);
-  await yieldToEventLoop();
-  const printStart = Date.now();
-  const result = await Print.printAsync({ html });
-  console.log(`[lab-pdf-view] Print.printAsync took ${Date.now() - printStart}ms`);
-  return result;
+  const uri = await writePdfToFile(props, `report-${Date.now()}.pdf`);
+  return Print.printAsync({ uri });
 }
 
 /** Renders the report to a PDF file and returns its local uri (e.g. to share or archive). */
 export async function reportToPdf(props: PrintMapperProps) {
-  const renderStart = Date.now();
-  const html = await renderReportHtml(props);
-  console.log(`[lab-pdf-view] renderReportHtml took ${Date.now() - renderStart}ms, html length ${html.length}`);
-  await yieldToEventLoop();
-  const printStart = Date.now();
-  const { uri } = await Print.printToFileAsync({ html });
-  console.log(`[lab-pdf-view] Print.printToFileAsync took ${Date.now() - printStart}ms`);
-  return uri;
+  return writePdfToFile(props, `report-${Date.now()}.pdf`);
 }

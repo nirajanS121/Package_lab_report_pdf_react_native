@@ -28,6 +28,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "expo-file-system": ">=18",
     "expo-print": ">=12",
     "react": ">=18",
     "react-native": ">=0.70",
@@ -35,6 +36,9 @@
     "react-test-renderer": ">=18"
   },
   "peerDependenciesMeta": {
+    "expo-file-system": {
+      "optional": true
+    },
     "expo-print": {
       "optional": true
     },
@@ -49,7 +53,10 @@
     }
   },
   "dependencies": {
+    "jsbarcode": "^3.12.3",
     "lodash": "^4.17.21",
+    "pdf-lib": "^1.17.1",
+    "qrcode-generator": "^2.0.4",
     "qrcode.react": "^4.2.0",
     "react-barcode": "^1.6.1"
   },
@@ -57,6 +64,7 @@
     "@types/lodash": "^4.17.13",
     "@types/react": "^19.1.1",
     "@types/react-test-renderer": "^19.1.0",
+    "expo-file-system": "^19.0.23",
     "expo-print": "^57.0.1",
     "react": "^19.1.1",
     "react-native": "^0.86.0",

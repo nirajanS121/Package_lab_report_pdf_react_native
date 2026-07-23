@@ -157,8 +157,6 @@ export const PageRender: React.FC<Props> = (props) => {
               : "white",
         }}
       >
-        {config.page_size === "A4" &&
-          printPreference?.is_browser_pagination && <></>}
         {(onlyPreviewWatermark || printTextWaterMark) && (
           <WatermarkOverlay
             show={onlyPreviewWatermark || printTextWaterMark}
@@ -223,28 +221,26 @@ export const PageRender: React.FC<Props> = (props) => {
                     !isVerifyEmail &&
                     headerImage?.name &&
                     printPreference.printWithImage && (
-                      <>
-                        <img
-                          src={headerImage.name}
-                          width={headerImage.width}
-                          height={headerImage.height}
-                          loading="lazy"
-                          style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            zIndex: 0,
-                            objectFit: "cover",
-                            objectPosition: "center",
-                            transformOrigin: "top left",
-                          }}
-                        />
-                      </>
+                      <img
+                        src={headerImage.name}
+                        width={headerImage.width}
+                        height={headerImage.height}
+                        loading="lazy"
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          zIndex: 0,
+                          objectFit: "cover",
+                          objectPosition: "center",
+                          transformOrigin: "top left",
+                        }}
+                      />
                     )}
                   {!onlyPreviewWatermark &&
-                    headerBlocks?.map((block) => (
+                    headerBlocks?.map((block, blockIndex) => (
                       <div
-                        key={block.key}
+                        key={`${block.key}-${blockIndex}`}
                         style={{
                           left: `${block.x}px`,
                           top: `${block.y}px`,
@@ -288,38 +284,28 @@ export const PageRender: React.FC<Props> = (props) => {
                               ? footerHeight - footerImageHeight
                               : footerHeight,
                           width: width,
-                          ...(footer?.isEnabled &&
-                            !isVerifyEmail &&
-                            !suffix &&
-                            footerImage?.name &&
-                            {}),
                         }}
                       >
-                        <>
-                          {footerBlocks?.map((block) => (
-                            <div
-                              key={block.key}
-                              style={{
-                                left: `${block.x}px`,
-                                top: `${block.y}px`,
-                                boxSizing: "border-box",
-                                whiteSpace: "nowrap",
-                                textAlign: "center",
-                                position: "absolute",
-                                display: block.isVisible ? "block" : "none",
-                              }}
-                            >
-                              {isExePrint ? (
-                                <ExeBlockRender
-                                  block={block}
-                                  maxWidth={width}
-                                />
-                              ) : (
-                                <BlockRender block={block} maxWidth={width} />
-                              )}
-                            </div>
-                          ))}
-                        </>
+                        {footerBlocks?.map((block, blockIndex) => (
+                          <div
+                            key={`${block.key}-${blockIndex}`}
+                            style={{
+                              left: `${block.x}px`,
+                              top: `${block.y}px`,
+                              boxSizing: "border-box",
+                              whiteSpace: "nowrap",
+                              textAlign: "center",
+                              position: "absolute",
+                              display: block.isVisible ? "block" : "none",
+                            }}
+                          >
+                            {isExePrint ? (
+                              <ExeBlockRender block={block} maxWidth={width} />
+                            ) : (
+                              <BlockRender block={block} maxWidth={width} />
+                            )}
+                          </div>
+                        ))}
                       </div>
                     )}
                     {onlyPreviewWatermark && (
@@ -338,23 +324,21 @@ export const PageRender: React.FC<Props> = (props) => {
                     printPreference?.printWithImage &&
                     !isVerifyEmail &&
                     !onlyPreviewWatermark && (
-                      <>
-                        <img
-                          src={footerImage?.name}
-                          width={footerImage?.width}
-                          height={footerImage?.height}
-                          loading="lazy"
-                          style={{
-                            position: "fixed",
-                            bottom: 0,
-                            left: 0,
-                            zIndex: 0,
-                            objectFit: "cover",
-                            objectPosition: "center",
-                            transformOrigin: "bottom left",
-                          }}
-                        />
-                      </>
+                      <img
+                        src={footerImage?.name}
+                        width={footerImage?.width}
+                        height={footerImage?.height}
+                        loading="lazy"
+                        style={{
+                          position: "fixed",
+                          bottom: 0,
+                          left: 0,
+                          zIndex: 0,
+                          objectFit: "cover",
+                          objectPosition: "center",
+                          transformOrigin: "bottom left",
+                        }}
+                      />
                     )}
                 </div>
               )}
@@ -394,29 +378,27 @@ export const PageRender: React.FC<Props> = (props) => {
                       {header?.isEnabled &&
                         headerImage?.name &&
                         (printPreference.printWithImage || isVerifyEmail) && (
-                          <>
-                            <div
-                              style={{
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                width: headerImage.width,
-                                height: headerImage.height,
-                                zIndex: 0,
-                                backgroundImage: `url("${headerImage.name}")`,
-                                backgroundSize: "cover",
-                                backgroundPosition: "center",
-                                backgroundRepeat: "no-repeat",
-                                transform: `scale(${width / headerImage.width})`,
-                                transformOrigin: "top left",
-                              }}
-                            />
-                          </>
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              width: headerImage.width,
+                              height: headerImage.height,
+                              zIndex: 0,
+                              backgroundImage: `url("${headerImage.name}")`,
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                              backgroundRepeat: "no-repeat",
+                              transform: `scale(${width / headerImage.width})`,
+                              transformOrigin: "top left",
+                            }}
+                          />
                         )}
 
-                      {headerBlocks?.map((block) => (
+                      {headerBlocks?.map((block, blockIndex) => (
                         <div
-                          key={block.key}
+                          key={`${block.key}-${blockIndex}`}
                           style={{
                             left: `${block.x}px`,
                             top: `${block.y}px`,
@@ -448,40 +430,30 @@ export const PageRender: React.FC<Props> = (props) => {
               </thead>
             )}
             <>
-              <tbody
-                style={{
-                  ...printPreference.isFooterFixed,
-                  ...(footer?.isEnabled &&
-                    !isVerifyEmail &&
-                    !suffix &&
-                    footerImage?.name),
-                }}
-              >
-                <>
-                  <tr>
-                    <td>
+              <tbody>
+                <tr>
+                  <td>
+                    <div
+                      className="content-body"
+                      style={{
+                        paddingLeft: `${contentX}px`,
+                        textAlign: "center",
+                      }}
+                    >
                       <div
-                        className="content-body"
                         style={{
-                          paddingLeft: `${contentX}px`,
-                          textAlign: "center",
+                          display: "flex",
+                          flexDirection: "row",
                         }}
                       >
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "row",
-                          }}
-                        >
-                          {contentBlock}
-                          {suffix && (
-                            <div style={{ marginLeft: 8 }}>{suffix}</div>
-                          )}
-                        </div>
+                        {contentBlock}
+                        {suffix && (
+                          <div style={{ marginLeft: 8 }}>{suffix}</div>
+                        )}
                       </div>
-                    </td>
-                  </tr>
-                </>
+                    </div>
+                  </td>
+                </tr>
               </tbody>
               {!onlyPreviewWatermark && (
                 <tfoot className="w-full">
@@ -508,37 +480,28 @@ export const PageRender: React.FC<Props> = (props) => {
                               : footerHeight,
                           width: width,
                           position: "relative",
-                          ...(footer?.isEnabled &&
-                            !isVerifyEmail &&
-                            !suffix &&
-                            footerImage?.name),
                         }}
                       >
-                        <>
-                          {footerBlocks.map((block) => (
-                            <div
-                              key={block.key}
-                              style={{
-                                left: `${block.x}px`,
-                                top: `${block.y - footerStart}px`,
-                                boxSizing: "border-box",
-                                whiteSpace: "nowrap",
-                                textAlign: "center",
-                                position: "absolute",
-                                display: block.isVisible ? "block" : "none",
-                              }}
-                            >
-                              {isExePrint ? (
-                                <ExeBlockRender
-                                  block={block}
-                                  maxWidth={width}
-                                />
-                              ) : (
-                                <BlockRender block={block} maxWidth={width} />
-                              )}
-                            </div>
-                          ))}
-                        </>
+                        {footerBlocks.map((block, blockIndex) => (
+                          <div
+                            key={`${block.key}-${blockIndex}`}
+                            style={{
+                              left: `${block.x}px`,
+                              top: `${block.y - footerStart}px`,
+                              boxSizing: "border-box",
+                              whiteSpace: "nowrap",
+                              textAlign: "center",
+                              position: "absolute",
+                              display: block.isVisible ? "block" : "none",
+                            }}
+                          >
+                            {isExePrint ? (
+                              <ExeBlockRender block={block} maxWidth={width} />
+                            ) : (
+                              <BlockRender block={block} maxWidth={width} />
+                            )}
+                          </div>
+                        ))}
                       </td>
                       {onlyPreviewWatermark && (
                         <div
@@ -562,24 +525,22 @@ export const PageRender: React.FC<Props> = (props) => {
           footerImage?.name &&
           (printPreference.printWithImage || isVerifyEmail) &&
           !onlyPreviewWatermark && (
-            <>
-              <img
-                src={footerImage?.name}
-                width={footerImage?.width}
-                height={footerImage?.height}
-                loading="lazy"
-                style={{
-                  position: "fixed",
-                  bottom: 0,
-                  left: 0,
-                  zIndex: 0,
-                  objectFit: "cover",
-                  objectPosition: "center",
-                  transform: `scale(${width / footerImage?.width})`,
-                  transformOrigin: "bottom left",
-                }}
-              />
-            </>
+            <img
+              src={footerImage?.name}
+              width={footerImage?.width}
+              height={footerImage?.height}
+              loading="lazy"
+              style={{
+                position: "fixed",
+                bottom: 0,
+                left: 0,
+                zIndex: 0,
+                objectFit: "cover",
+                objectPosition: "center",
+                transform: `scale(${width / footerImage?.width})`,
+                transformOrigin: "bottom left",
+              }}
+            />
           )}
       </div>
 

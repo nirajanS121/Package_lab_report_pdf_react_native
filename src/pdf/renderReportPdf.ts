@@ -1,30 +1,14 @@
 import { PDFDocument, StandardFonts } from "pdf-lib";
-import { getPages, mapValueToBlock } from "../helper";
+import {
+  findTemplateForDepartmentType,
+  getPages,
+  mapValueToBlock,
+} from "../helper";
 import { getTableContent } from "../ReportPrintMapper/helper";
 import type { PrintMapperProps } from "../ReportPrintMapper";
 import { createPdfContext } from "./blocks";
 import { PageManager } from "./pageManager";
 import { drawPathoTable } from "./pathoTable";
-
-function findTemplate(
-  templates: any[] | undefined,
-  departmentType: string | null,
-) {
-  return templates?.find((t) => {
-    let arr: any[];
-    if (Array.isArray(t.dep_type)) {
-      arr = t.dep_type;
-    } else {
-      try {
-        const parsed = JSON.parse(t.dep_type);
-        arr = Array.isArray(parsed) ? parsed : [parsed];
-      } catch {
-        arr = [t.dep_type];
-      }
-    }
-    return arr.includes(departmentType);
-  });
-}
 
 export async function renderReportPdf(
   props: PrintMapperProps,
@@ -70,7 +54,7 @@ export async function renderReportPdf(
     const labId = page[0]?.lab_id;
     const patientTestId = page[0]?.id;
 
-    const template = findTemplate(templates, departmentType);
+    const template = findTemplateForDepartmentType(templates, departmentType);
     if (!template) {
       const pdfPage = pdfDoc.addPage([595, 842]);
       pdfPage.drawText(`${departmentType} Template Not Found`, {
@@ -93,9 +77,7 @@ export async function renderReportPdf(
         signatures && signatures?.[labId]?.[patientTestId]
           ? Object.values(signatures[labId][patientTestId]).flat()
           : null,
-      referral_doctor: page?.[0].agent_doctor
-        ? page?.[0].agent_doctor
-        : page?.[0].referral_doctor,
+      referral_doctor: page?.[0].agent_doctor || page?.[0].referral_doctor,
     };
 
     const headerBlocks = template.content_blocks

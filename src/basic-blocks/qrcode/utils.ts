@@ -8,6 +8,7 @@ interface Props {
   value: string;
   location: IBlockLocation;
 }
+
 export const createQrcodeBlock = (props: Props): QrcodeBlockProps => {
   return {
     type: "qrcode",

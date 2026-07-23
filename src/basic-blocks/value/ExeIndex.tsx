@@ -1,7 +1,8 @@
+import React from "react";
 import { ValueBlockProps } from "./type";
 
 interface Props {
-  blockProps: ValueBlockProps | any;
+  blockProps: ValueBlockProps;
   scaleFactor?: number;
 }
 

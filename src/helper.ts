@@ -4,6 +4,26 @@ import { isQrcodeBlock } from "./basic-blocks/qrcode/utils";
 import { isSignatureBlock } from "./basic-blocks/signature/utils";
 import { isValueBlock } from "./basic-blocks/value/utils";
 
+export function findTemplateForDepartmentType(
+  templates: any[] | undefined,
+  departmentType: any,
+): any {
+  return templates?.find((t: any) => {
+    let arr: any[];
+    if (Array.isArray(t.dep_type)) {
+      arr = t.dep_type;
+    } else {
+      try {
+        const parsed = JSON.parse(t.dep_type);
+        arr = Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        arr = [t.dep_type];
+      }
+    }
+    return arr.includes(departmentType);
+  });
+}
+
 export function getValue(obj: Record<string, any>, path?: any): any {
   if (!obj || !path) return undefined;
   if (Array.isArray(path)) {

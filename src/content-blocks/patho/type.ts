@@ -45,9 +45,39 @@ export interface ITableProfile {
   department_name?: string | null;
 }
 
+export interface IPathoColumnFormat {
+  isBold?: boolean;
+  isItalics?: boolean;
+  isCapsLocks?: boolean;
+  headerFontSize?: number;
+  bodyFontSize?: number;
+}
+
+export interface IPathoColumnConfig {
+  value: string;
+  valueKey: string;
+  configColumn: {
+    columnWidth: number;
+    alignment?: string;
+    headerFormate?: IPathoColumnFormat;
+    bodyFormate?: IPathoColumnFormat;
+  };
+}
+
+export interface IPathoNoteConfig {
+  isBold?: boolean;
+  isItalics?: boolean;
+  isCapsLocks?: boolean;
+  fontSize?: number;
+}
+
 export interface PathoContentBlockProps extends BaseBlockProps {
   type: "table";
   label: string;
   title: string;
   data?: Array<ITableProfile>;
+  tableColumns?: Array<IPathoColumnConfig>;
+  tableWidth?: number;
+  endNoteConfig?: IPathoNoteConfig;
+  commentsConfig?: IPathoNoteConfig;
 }

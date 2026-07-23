@@ -1,3 +1,4 @@
+import React from "react";
 import Barcode from "react-barcode";
 import { BarcodeBlockProps } from "./type";
 
@@ -11,7 +12,7 @@ export const BarcodeBlock: React.FC<Props> = (props) => {
   const { value, fontSize } = blockProps;
   const valueUpdate = `${value}`;
 
-  if (!(valueUpdate?.length > 0)) return "";
+  if (!(valueUpdate?.length > 0)) return null;
 
   if (typeof document === "undefined") {
     return null;

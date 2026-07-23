@@ -1,3 +1,4 @@
+import React from "react";
 import { ImageBlockProps } from "./type";
 
 interface Props {
@@ -17,9 +18,10 @@ export const ImageBlock: React.FC<Props> = (props) => {
         height: `${height * scaleFactor}px`,
       }}
     >
-      { logoImage ||url  ? (
+      {logoImage || url ? (
         <img
-          src={logoImage?.name??url }
+          src={logoImage?.name ?? url}
+          alt={label}
           style={{
             width: width * scaleFactor,
             height: height * scaleFactor,

@@ -4,35 +4,20 @@ import { PdfContext, resolveFont } from "./blocks";
 import { wrapPlainText, wrapRuns, TextRun, WrappedLine } from "./textLayout";
 import { parseRichText, stripHtml } from "./richText";
 import { groupAntibiotics } from "../helper";
+import {
+  IPathoColumnConfig,
+  IPathoNoteConfig,
+} from "../content-blocks/patho/type";
 
-interface ColumnConfig {
-  value: string;
-  valueKey: string;
-  configColumn: {
-    columnWidth: number;
-    alignment?: string;
-    headerFormate?: {
-      isBold?: boolean;
-      isItalics?: boolean;
-      isCapsLocks?: boolean;
-      headerFontSize?: number;
-    };
-    bodyFormate?: {
-      isBold?: boolean;
-      isItalics?: boolean;
-      isCapsLocks?: boolean;
-      bodyFontSize?: number;
-    };
-  };
-}
+type ColumnConfig = IPathoColumnConfig;
 
 interface PathoTableProps {
   title?: string;
   data?: any[];
   tableColumns?: ColumnConfig[];
   tableWidth?: number;
-  endNoteConfig?: any;
-  commentsConfig?: any;
+  endNoteConfig?: IPathoNoteConfig;
+  commentsConfig?: IPathoNoteConfig;
   x: number;
 }
 

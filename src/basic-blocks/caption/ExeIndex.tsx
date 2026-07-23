@@ -1,7 +1,8 @@
+import React from "react";
 import { CaptionBlockProps } from "./type";
 
 interface Props {
-  blockProps: CaptionBlockProps | any;
+  blockProps: CaptionBlockProps;
   scaleFactor?: number;
   maxWidth: number;
 }

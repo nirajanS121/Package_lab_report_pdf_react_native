@@ -1,3 +1,4 @@
+import React from "react";
 import { SignatureBlockProps } from "./type";
 
 interface Props {
@@ -53,9 +54,7 @@ export const SignatureBlock: React.FC<Props> = ({
                 objectFit: "contain",
               }}
             />
-          ) : (
-            ""
-          )}
+          ) : null}
         </div>
       ) : (
         <div

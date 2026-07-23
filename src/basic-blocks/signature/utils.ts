@@ -20,7 +20,7 @@ export const createSignatureBlock = (props: Props): SignatureBlockProps => {
     name: "Name",
     qualification: "Qualification",
     specialization: "Specialization",
-    specialities:"specialities",
+    specialities: "specialities",
     nmc: "nmc",
     nhpc_no: "nhpc_no",
     ...props,

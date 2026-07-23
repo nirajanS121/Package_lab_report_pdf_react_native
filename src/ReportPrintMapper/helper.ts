@@ -1,23 +1,5 @@
 import { groupByProfile } from "../helper";
 
-export function getPages(data: Array<any>): any[][] {
-  const pageMap: Record<string, any[]> = data.reduce(
-    (acc, item) => {
-      const key = item.separate_page ? item?.name : item?.department_name;
-
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-
-      acc[key].push(item);
-      return acc;
-    },
-    {} as Record<string, any[]>,
-  );
-
-  return Object.values(pageMap);
-}
-
 export const getTableContent = (page: any, pageBreakRule: string) => {
   const tableProfiles: any[] = [];
 
@@ -49,11 +31,11 @@ export const getTableContent = (page: any, pageBreakRule: string) => {
       }
 
       let headingLevel = 0;
-      patient_test_details.forEach((testDetail, index) => {
+      patient_test_details.forEach((testDetail, testIndex) => {
         if (testDetail.result_type === "heading") {
           const heading_row: any = {
             type: "heading",
-            level: level,
+            level,
             title: testDetail.parameter_name,
             hideUnitRef: testDetail.hideUnitRef,
           };
@@ -71,11 +53,11 @@ export const getTableContent = (page: any, pageBreakRule: string) => {
             unit: testDetail.uom_name,
             referenceRange: testDetail.display_range,
             endnote:
-              patient_test_details.length - 1 === index
+              patient_test_details.length - 1 === testIndex
                 ? (patient_pre_footer?.endnote ?? undefined)
                 : undefined,
             comment:
-              patient_test_details.length - 1 === index
+              patient_test_details.length - 1 === testIndex
                 ? (patient_pre_footer?.comment ?? undefined)
                 : undefined,
             abnormal: testDetail?.abnormal,

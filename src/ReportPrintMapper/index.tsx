@@ -1,6 +1,10 @@
 import { forwardRef } from "react";
 import { getDescriptionContent, getTableContent } from "./helper";
-import { getPages, mapValueToBlock } from "../helper";
+import {
+  findTemplateForDepartmentType,
+  getPages,
+  mapValueToBlock,
+} from "../helper";
 import { PathoContentBlock } from "../content-blocks/patho";
 import { HistoContentBlock } from "../content-blocks/histo";
 import { PageRender } from "../page-render";
@@ -23,7 +27,7 @@ export interface PrintMapperProps {
   previewWatermarkObject?: any;
   orientationNotSet?: any;
   footerNotFixedForceFully?: any;
-  printTemplateDesign?: any
+  printTemplateDesign?: any;
 }
 
 export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
@@ -45,33 +49,19 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
     footerNotFixedForceFully,
     printTemplateDesign
   } = props;
-  const response = {
-    data: printTemplateDesign,
-    rules: []
-  }
 
-  const templates = response?.data;
-  const getRules = response?.rules;
+  const templates = printTemplateDesign;
+  const getRules: any[] = [];
   const pages = getPages(table_data, signatures, pageBreakRule);
   const isTitleDescHorizontal = getRules?.some(
     (row: any) => row?.key === "title_desc_vertical" && row?.value === "0"
   );
 
   const departmentTypeDirect = pages?.[0]?.[0]?.department_type ?? null;
-  const templateDirect = templates?.find((t: any) => {
-    let arr;
-    if (Array.isArray(t.dep_type)) {
-      arr = t.dep_type;
-    } else {
-      try {
-        const parsed = JSON.parse(t.dep_type);
-        arr = Array.isArray(parsed) ? parsed : [parsed];
-      } catch {
-        arr = [t.dep_type];
-      }
-    }
-    return arr.includes(departmentTypeDirect);
-  });
+  const templateDirect = findTemplateForDepartmentType(
+    templates,
+    departmentTypeDirect,
+  );
 
   const config = templateDirect?.editor_config ?? null;
 
@@ -123,22 +113,10 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
           const labId = page[0]?.lab_id;
           const patientTestId = page[0]?.id;
 
-          const template = templates?.find((t: any) => {
-            let arr;
-
-            if (Array.isArray(t.dep_type)) {
-              arr = t.dep_type;
-            } else {
-              try {
-                const parsed = JSON.parse(t.dep_type);
-                arr = Array.isArray(parsed) ? parsed : [parsed];
-              } catch {
-                arr = [t.dep_type];
-              }
-            }
-
-            return arr.includes(departmentType);
-          });
+          const template = findTemplateForDepartmentType(
+            templates,
+            departmentType,
+          );
 
           if (!template) {
             return (
@@ -157,13 +135,14 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
             ...page?.[0],
             patient: {
               ...data,
-              agent_name: agent_name,
+              agent_name,
             },
             signatures:
               signatures && signatures?.[labId]?.[patientTestId]
                 ? Object.values(signatures[labId][patientTestId]).flat()
                 : null,
-            referral_doctor: page?.[0].agent_doctor ? page?.[0].agent_doctor : page?.[0].referral_doctor,
+            referral_doctor:
+              page?.[0].agent_doctor || page?.[0].referral_doctor,
           };
 
           const headerBlocks = template.content_blocks
@@ -222,7 +201,6 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
                         pages.length === index + 1 ? lastPageRenderBlockFooter : null
                       }
                       lineHeight={lineHeight}
-                      config={templateConfig}
                       isFooterFixed={templateConfig?.printPreference?.isFooterFixed}
                       maxWidth={templateConfig.width}
                       onlyPreviewWatermark={onlyPreviewWatermark}

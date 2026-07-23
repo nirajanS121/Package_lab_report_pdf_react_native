@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { ValueBlockProps } from "./type";
 
 interface Props {
-  blockProps: ValueBlockProps | any;
+  blockProps: ValueBlockProps;
   scaleFactor?: number;
 }
 
@@ -10,6 +10,9 @@ export const ValueBlock: React.FC<Props> = ({
   blockProps,
   scaleFactor = 1,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const {
     value,
     isBold,
@@ -25,10 +28,8 @@ export const ValueBlock: React.FC<Props> = ({
     frontendNumberOfRow,
     ...rest
   } = blockProps;
-  if (hideKey && hideValue && rest[hideKey] === hideValue) return null;
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  if (hideKey && hideValue && rest[hideKey] === hideValue) return null;
 
   const isAutoResize = frontendConditionValue === "auto_resize_text";
   const lineHeight = fontSize * 1.2 * scaleFactor;

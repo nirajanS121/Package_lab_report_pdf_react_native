@@ -3,8 +3,6 @@ import React from "react";
 interface WatermarkOverlayProps {
   show?: boolean;
   text?: string;
-  columns?: number; 
-  rows?: number;
   fontSize?: number;
   opacity?: number;
   rotation?: number;

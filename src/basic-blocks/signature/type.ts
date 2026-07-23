@@ -14,6 +14,7 @@ export interface SignatureBlockProps extends BaseBlockProps {
   specialization: string | null;
   nmc: string | null;
   nhpc_no: string | null;
-  designation?: string | any;
+  designation?: string;
   frontendConditionValue?: string;
+  hide_signature?: boolean;
 }

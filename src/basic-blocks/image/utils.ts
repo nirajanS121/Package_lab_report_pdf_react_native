@@ -32,5 +32,5 @@ export function isPathoTableBlock(block: BlockProps): block is ImageBlockProps {
 }
 
 export function isDischargeDetail(block: BlockProps): block is ImageBlockProps {
-  return  block.type === "estimate_bill_detail";
+  return block.type === "estimate_bill_detail";
 }

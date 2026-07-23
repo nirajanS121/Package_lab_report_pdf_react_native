@@ -37,7 +37,7 @@ export const UserReportPrintMapper = forwardRef<HTMLDivElement, UserPrintMapperP
 
           if (!template) {
             return (
-              <div style={{ pageBreakAfter: "always", marginTop: headerImage ? headerImage.height : 0 }}>
+              <div style={{ pageBreakAfter: "always", marginTop: headerImage?.height ?? 0 }}>
                 {departmentType} Template Not Found
               </div>
             );
@@ -47,7 +47,8 @@ export const UserReportPrintMapper = forwardRef<HTMLDivElement, UserPrintMapperP
             ...data,
             ...page?.[0],
             signatures: signatures?.[departmentId],
-            referral_doctor: page?.[0].agent_doctor ? page?.[0].agent_doctor : page?.[0].referral_doctor,
+            referral_doctor:
+              page?.[0].agent_doctor || page?.[0].referral_doctor,
           };
 
           const headerBlocks = template.content_blocks
@@ -64,7 +65,7 @@ export const UserReportPrintMapper = forwardRef<HTMLDivElement, UserPrintMapperP
 
           if (!contentBlock) {
             return (
-              <div style={{ marginTop: headerImage ? headerImage.height : 0 }}>
+              <div style={{ marginTop: headerImage?.height ?? 0 }}>
                 You forgot to add content in the template
               </div>
             );
@@ -113,10 +114,11 @@ export const UserReportPrintMapper = forwardRef<HTMLDivElement, UserPrintMapperP
                         gridTemplateColumns: "repeat(2, 1fr)",
                       }}
                     >
-                      {imagesAfterContent.map((image) => (
-                        <div>
+                      {imagesAfterContent.map((image, imageIndex) => (
+                        <div key={`${image.name}-${imageIndex}`}>
                           <img
                             src={image.name}
+                            alt=""
                             style={{
                               width: "100%",
                               maxHeight: templateConfig.height * 0.15,

@@ -1,17 +1,18 @@
-import { PathoContentBlockProps } from "./type";
+import React from "react";
+import { IPathoColumnConfig, IPathoNoteConfig, PathoContentBlockProps } from "./type";
 import { isDataRow, isHeadingRow } from "./utils";
-import { groupAntibiotics } from "../../helper";
+import { groupAntibiotics, IAntibiotic } from "../../helper";
 
 interface Props {
-  blockProps: PathoContentBlockProps | any;
+  blockProps: PathoContentBlockProps;
   scaleFactor?: number;
   maxWidth: number;
   isFooterFixed?: boolean;
   lineHeight?: boolean;
   onlyPreviewWatermark?: boolean;
   lastPageContent?: any;
-  config?: any;
 }
+
 export const PathoContentBlock: React.FC<Props> = (props) => {
   const {
     blockProps,
@@ -27,28 +28,31 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
     tableWidth,
     endNoteConfig,
     commentsConfig,
-    config,
   } = blockProps;
 
-  const totalColumnWidth = tableColumns.reduce((sum: any, column: any) => {
+  const totalColumnWidth = tableColumns.reduce((sum, column) => {
     return sum + (column.configColumn.columnWidth || 0);
   }, 0);
   const updateMaxWidth = tableWidth ?? totalColumnWidth;
-  const getTextStyle = (config: any, isHeader: boolean = false) => {
+
+  const getTextStyle = (
+    config: IPathoColumnConfig["configColumn"],
+    isHeader: boolean = false,
+  ): React.CSSProperties => {
     const styleConfig = isHeader ? config.headerFormate : config.bodyFormate;
     return {
       fontWeight: styleConfig?.isBold ? "bold" : "normal",
       fontStyle: styleConfig?.isItalics ? "italic" : "normal",
       textTransform: styleConfig?.isCapsLocks ? "uppercase" : "none",
       fontSize:
-        (styleConfig[isHeader ? "headerFontSize" : "bodyFontSize"] || 12) *
+        (styleConfig?.[isHeader ? "headerFontSize" : "bodyFontSize"] || 12) *
         scaleFactor,
-      textAlign: config?.alignment || "left",
+      textAlign: (config?.alignment as React.CSSProperties["textAlign"]) || "left",
       padding: "2px 5px",
     };
   };
 
-  const getNoteCommentStyle = (config: any) => {
+  const getNoteCommentStyle = (config?: IPathoNoteConfig): React.CSSProperties => {
     return {
       fontWeight: config?.isBold ? "bold" : "normal",
       fontStyle: config?.isItalics ? "italic" : "normal",
@@ -87,9 +91,9 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
           borderCollapse: "collapse",
         }}
       >
-        {tableColumns.map((col: any, idx: any) => (
+        {tableColumns.map((col, idx) => (
           <div
-            key={idx}
+            key={`${col.valueKey}-${idx}`}
             style={{
               width: col.configColumn.columnWidth,
               ...getTextStyle(col.configColumn, true),
@@ -109,7 +113,7 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
       </div>
 
       <div>
-        {data?.map((profile: any, index: any) => {
+        {data?.map((profile, index) => {
           const previousTitle =
             index > 0 ? data?.[index - 1]?.department_name : null;
 
@@ -200,7 +204,7 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                             padding: "2px",
                           }}
                         >
-                          {tableColumns.map((col: any, idx: number) => {
+                          {tableColumns.map((col, idx) => {
                             const isOrganism =
                               item.result_type === "organism" ||
                               item.result_type === "freetext";
@@ -217,11 +221,11 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                               (item.result?.length ?? 0) > 20;
                             const unitColumnWidth =
                               tableColumns.find(
-                                (c: any) => c.valueKey === "unit",
+                                (c) => c.valueKey === "unit",
                               )?.configColumn?.columnWidth ?? 0;
                             const refColumnWidth =
                               tableColumns.find(
-                                (c: any) => c.valueKey === "referenceRange",
+                                (c) => c.valueKey === "referenceRange",
                               )?.configColumn?.columnWidth ?? 0;
                             let adjustedWidth = col.configColumn.columnWidth;
 
@@ -323,7 +327,7 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                                 </div>
                               );
                             }
-                            let value = item[col.valueKey] ?? "-";
+                            const value = item[col.valueKey] ?? "-";
                             return (
                               <div
                                 key={idx}
@@ -341,7 +345,7 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                                     style={{
                                       display: "flex",
                                       textAlign: "start",
-                                      width: `auto`,
+                                      width: "auto",
                                       wordWrap: "break-word",
                                       whiteSpace: "normal",
                                       overflowWrap: "anywhere",
@@ -351,9 +355,7 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                                   </div>
                                   {(item?.specimen_name || item?.method) && (
                                     <div style={{ fontSize: 8 }}>
-                                      {item?.specimen_name && (
-                                        <>{item.specimen_name}</>
-                                      )}
+                                      {item?.specimen_name}
                                     </div>
                                   )}
                                 </div>
@@ -386,7 +388,6 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                       )}
                       <AntibioticDisplay
                         antibiotic_results={item?.antibiotic_results ?? []}
-                        level={item.level + 1}
                       />
 
                       {item.comment && (
@@ -500,154 +501,150 @@ export const ColumnContainer: React.FC<ColumnContainerProps> = (props) => {
   );
 };
 
-export const AntibioticDisplay = ({ antibiotic_results }: any) => {
+interface AntibioticDisplayProps {
+  antibiotic_results: Array<IAntibiotic>;
+}
+
+export const AntibioticDisplay = ({
+  antibiotic_results,
+}: AntibioticDisplayProps) => {
   const { sensitive, resistant, partiallyResistant } =
     groupAntibiotics(antibiotic_results);
+
+  if (antibiotic_results.length === 0) return null;
+
   return (
-    <>
-      {antibiotic_results.length > 0 && (
-        <div>
-          <div>
-            <table
-              style={{
-                width: "100%",
-                tableLayout: "fixed",
-              }}
-            >
-              <thead
-                style={{
-                  borderBottom: "1px solid #aaa9a9",
-                }}
-              >
-                <tr>
-                  {sensitive.length > 0 && (
-                    <th
-                      style={{
-                        textAlign: "center",
-                        padding: "4px 8px",
-                        borderRight: "1px solid #aaa9a9",
-                        borderLeft: "1px solid #aaa9a9",
-                      }}
-                    >
-                      Sensitive
-                    </th>
-                  )}
-                  {resistant.length > 0 && (
-                    <th
-                      style={{
-                        textAlign: "center",
-                        padding: "4px 8px",
-                        borderRight:
-                          partiallyResistant.length > 0
-                            ? "1px solid #aaa9a9"
-                            : "",
-                      }}
-                    >
-                      Resistant
-                    </th>
-                  )}
-                  {partiallyResistant.length > 0 && (
-                    <th
-                      style={{
-                        textAlign: "center",
-                        padding: "4px 8px",
-                        borderRight:
-                          partiallyResistant.length > 0
-                            ? "1px solid #aaa9a9"
-                            : "",
-                      }}
-                    >
-                      Partially Sensitive
-                    </th>
-                  )}
-                </tr>
-              </thead>
-              <tbody
-                style={{
-                  borderBottom: "1px solid #aaa9a9",
-                }}
-              >
-                <tr
+    <div>
+      <div>
+        <table
+          style={{
+            width: "100%",
+            tableLayout: "fixed",
+          }}
+        >
+          <thead
+            style={{
+              borderBottom: "1px solid #aaa9a9",
+            }}
+          >
+            <tr>
+              {sensitive.length > 0 && (
+                <th
                   style={{
-                    verticalAlign: "top",
+                    textAlign: "center",
+                    padding: "4px 8px",
+                    borderRight: "1px solid #aaa9a9",
+                    borderLeft: "1px solid #aaa9a9",
                   }}
                 >
-                  {sensitive.length > 0 && (
-                    <td
+                  Sensitive
+                </th>
+              )}
+              {resistant.length > 0 && (
+                <th
+                  style={{
+                    textAlign: "center",
+                    padding: "4px 8px",
+                    borderRight:
+                      partiallyResistant.length > 0 ? "1px solid #aaa9a9" : "",
+                  }}
+                >
+                  Resistant
+                </th>
+              )}
+              {partiallyResistant.length > 0 && (
+                <th
+                  style={{
+                    textAlign: "center",
+                    padding: "4px 8px",
+                    borderRight:
+                      partiallyResistant.length > 0 ? "1px solid #aaa9a9" : "",
+                  }}
+                >
+                  Partially Sensitive
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody
+            style={{
+              borderBottom: "1px solid #aaa9a9",
+            }}
+          >
+            <tr
+              style={{
+                verticalAlign: "top",
+              }}
+            >
+              {sensitive.length > 0 && (
+                <td
+                  style={{
+                    padding: "4px 8px",
+                    borderRight: "1px solid #aaa9a9",
+                    borderLeft: "1px solid #aaa9a9",
+                  }}
+                >
+                  {sensitive.map((item, idx) => (
+                    <div
+                      key={`${item.name}-${idx}`}
                       style={{
-                        padding: "4px 8px",
-                        borderRight: "1px solid #aaa9a9",
-                        borderLeft: "1px solid #aaa9a9",
+                        fontStyle: "italic",
+                        textWrap: "wrap",
                       }}
                     >
-                      {sensitive.map((item: any) => {
-                        return (
-                          <div
-                            style={{
-                              fontStyle: "italic",
-                              textWrap: "wrap",
-                            }}
-                          >
-                            {item?.name}
-                          </div>
-                        );
-                      })}
-                    </td>
-                  )}
-                  {resistant.length > 0 && (
-                    <td
+                      {item.name}
+                    </div>
+                  ))}
+                </td>
+              )}
+              {resistant.length > 0 && (
+                <td
+                  style={{
+                    padding: "4px 8px",
+                    ...(partiallyResistant.length > 0 && {
+                      borderRight: "1px solid #aaa9a9",
+                    }),
+                  }}
+                >
+                  {resistant.map((item, idx) => (
+                    <div
+                      key={`${item.name}-${idx}`}
                       style={{
-                        padding: "4px 8px",
-                        ...(partiallyResistant.length > 0 && {
-                          borderRight: "1px solid #aaa9a9",
-                        }),
+                        fontStyle: "italic",
+                        textWrap: "wrap",
                       }}
                     >
-                      {resistant.map((item: any) => {
-                        return (
-                          <div
-                            style={{
-                              fontStyle: "italic",
-                              textWrap: "wrap",
-                            }}
-                          >
-                            {item?.name}
-                          </div>
-                        );
-                      })}
-                    </td>
-                  )}
-                  {partiallyResistant.length > 0 && (
-                    <td
+                      {item.name}
+                    </div>
+                  ))}
+                </td>
+              )}
+              {partiallyResistant.length > 0 && (
+                <td
+                  style={{
+                    padding: "4px 8px",
+                    textAlign: "center",
+                    borderRight:
+                      partiallyResistant.length > 0 ? "1px solid #aaa9a9" : "",
+                  }}
+                >
+                  {partiallyResistant.map((item, idx) => (
+                    <div
+                      key={`${item.name}-${idx}`}
                       style={{
-                        padding: "4px 8px",
-                        textAlign: "center",
-                        borderRight:
-                          partiallyResistant.length > 0
-                            ? "1px solid #aaa9a9"
-                            : "",
+                        fontStyle: "italic",
+                        textWrap: "wrap",
                       }}
                     >
-                      {partiallyResistant.map((item: any) => {
-                        return (
-                          <div
-                            style={{
-                              fontStyle: "italic",
-                              textWrap: "wrap",
-                            }}
-                          >
-                            {item?.name}
-                          </div>
-                        );
-                      })}
-                    </td>
-                  )}
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-    </>
+                      {item.name}
+                    </div>
+                  ))}
+                </td>
+              )}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };

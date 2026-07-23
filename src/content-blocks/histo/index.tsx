@@ -1,3 +1,4 @@
+import React from "react";
 import { HistoContentBlockProps } from "./type";
 import BlockRender from "../../block-render";
 
@@ -105,29 +106,26 @@ export const HistoContentBlock: React.FC<Props> = (props) => {
               const finalDescription = `${item?.description || ""}${extraContent}`;
 
               return (
-                <div>
+                <div key={`histo-item-${index}`}>
                   <div
-                    key={index}
                     className={`${isTitleDescHorizontal ? "flex flex-wrap" : ""}`}
                   >
                     {item?.title && (
-                      <>
+                      <div
+                        className={` ${isTitleDescHorizontal ? "w-3/10" : "w-full"} ${!isFirst && "mt-[10px] mb-[1px]"} `}
+                        style={{
+                          wordWrap: "break-word",
+                          whiteSpace: "normal",
+                          pageBreakInside: "avoid",
+                          textAlign: "left",
+                          width: isTitleDescHorizontal ? "30%" : "100%",
+                        }}
+                      >
                         <div
-                          className={` ${isTitleDescHorizontal ? "w-3/10" : "w-full"} ${!isFirst && "mt-[10px] mb-[1px]"} `}
-                          style={{
-                            wordWrap: "break-word",
-                            whiteSpace: "normal",
-                            pageBreakInside: "avoid",
-                            textAlign: "left",
-                            width: isTitleDescHorizontal ? "30%" : "100%",
-                          }}
-                        >
-                          <div
-                            className="ck-content-html"
-                            dangerouslySetInnerHTML={{ __html: item?.title }}
-                          />
-                        </div>
-                      </>
+                          className="ck-content-html"
+                          dangerouslySetInnerHTML={{ __html: item?.title }}
+                        />
+                      </div>
                     )}
                     {finalDescription && (
                       <div
@@ -158,24 +156,22 @@ export const HistoContentBlock: React.FC<Props> = (props) => {
                             position: "relative",
                           }}
                         >
-                          <>
-                            {footerBlocks?.map((block: any) => (
-                              <div
-                                key={block.key}
-                                style={{
-                                  left: `${block.x}px`,
-                                  bottom: 0,
-                                  position: "absolute",
-                                  boxSizing: "border-box",
-                                  whiteSpace: "nowrap",
-                                  textAlign: "center",
-                                  display: block.isVisible ? "block" : "none",
-                                }}
-                              >
-                                <BlockRender block={block} maxWidth={width} />
-                              </div>
-                            ))}
-                          </>
+                          {footerBlocks?.map((block: any, blockIndex: number) => (
+                            <div
+                              key={`${block.key}-${blockIndex}`}
+                              style={{
+                                left: `${block.x}px`,
+                                bottom: 0,
+                                position: "absolute",
+                                boxSizing: "border-box",
+                                whiteSpace: "nowrap",
+                                textAlign: "center",
+                                display: block.isVisible ? "block" : "none",
+                              }}
+                            >
+                              <BlockRender block={block} maxWidth={width} />
+                            </div>
+                          ))}
                         </div>
                       )}
                   </div>

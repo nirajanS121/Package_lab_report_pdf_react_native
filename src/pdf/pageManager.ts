@@ -4,6 +4,7 @@ import {
   drawBasicBlock,
   embedImageBytes,
   topToPdfY,
+  warmBlockImageCache,
 } from "./blocks";
 
 interface HeaderFooterConfig {
@@ -68,52 +69,54 @@ export class PageManager {
     } = this.hf;
     const printPreference = config?.printPreference ?? {};
 
-    if (printPreference.printWithImage && headerImage?.name) {
-      const embedded = await embedImageBytes(this.ctx, headerImage.name);
-      if (embedded) {
-        const height =
-          (this.pageWidth / headerImage.width) * headerImage.height;
-        this.page.drawImage(embedded, {
-          x: 0,
-          y: this.pageHeight - height,
-          width: this.pageWidth,
-          height,
-        });
-      }
-    }
-    if (printPreference.printWithImage && footerImage?.name) {
-      const embedded = await embedImageBytes(this.ctx, footerImage.name);
-      if (embedded) {
-        const height =
-          (this.pageWidth / footerImage.width) * footerImage.height;
-        this.page.drawImage(embedded, {
-          x: 0,
-          y: 0,
-          width: this.pageWidth,
-          height,
-        });
-      }
-    }
-    if (
-      watermark?.name &&
+    const wantsHeader = printPreference.printWithImage && !!headerImage?.name;
+    const wantsFooter = printPreference.printWithImage && !!footerImage?.name;
+    const wantsWatermark =
+      !!watermark?.name &&
       printPreference.printWithImage &&
-      typeof watermark.width === "number"
-    ) {
-      const embedded = await embedImageBytes(this.ctx, watermark.name);
-      if (embedded) {
-        const paperMin = Math.min(this.pageWidth, this.pageHeight);
-        const watermarkWidth = paperMin * 0.9;
-        const watermarkHeight =
-          (watermarkWidth / watermark.width) * watermark.height;
-        const opacity = (config?.watermark?.opacity ?? 0) / 100;
-        this.page.drawImage(embedded, {
-          x: (this.pageWidth - watermarkWidth) / 2,
-          y: (this.pageHeight - watermarkHeight) / 2,
-          width: watermarkWidth,
-          height: watermarkHeight,
-          opacity,
-        });
-      }
+      typeof watermark.width === "number";
+
+    const [headerEmbedded, footerEmbedded, watermarkEmbedded] =
+      await Promise.all([
+        wantsHeader ? embedImageBytes(this.ctx, headerImage.name) : null,
+        wantsFooter ? embedImageBytes(this.ctx, footerImage.name) : null,
+        wantsWatermark ? embedImageBytes(this.ctx, watermark.name) : null,
+        warmBlockImageCache(this.ctx, [...headerBlocks, ...footerBlocks]),
+      ]);
+
+    if (wantsHeader && headerEmbedded) {
+      const height =
+        (this.pageWidth / headerImage.width) * headerImage.height;
+      this.page.drawImage(headerEmbedded, {
+        x: 0,
+        y: this.pageHeight - height,
+        width: this.pageWidth,
+        height,
+      });
+    }
+    if (wantsFooter && footerEmbedded) {
+      const height =
+        (this.pageWidth / footerImage.width) * footerImage.height;
+      this.page.drawImage(footerEmbedded, {
+        x: 0,
+        y: 0,
+        width: this.pageWidth,
+        height,
+      });
+    }
+    if (wantsWatermark && watermarkEmbedded) {
+      const paperMin = Math.min(this.pageWidth, this.pageHeight);
+      const watermarkWidth = paperMin * 0.9;
+      const watermarkHeight =
+        (watermarkWidth / watermark.width) * watermark.height;
+      const opacity = (config?.watermark?.opacity ?? 0) / 100;
+      this.page.drawImage(watermarkEmbedded, {
+        x: (this.pageWidth - watermarkWidth) / 2,
+        y: (this.pageHeight - watermarkHeight) / 2,
+        width: watermarkWidth,
+        height: watermarkHeight,
+        opacity,
+      });
     }
 
     for (const block of headerBlocks) {

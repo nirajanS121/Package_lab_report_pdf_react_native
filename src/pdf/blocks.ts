@@ -435,3 +435,20 @@ export async function drawBasicBlock(
       return;
   }
 }
+
+function blockImageUrl(block: any): string | undefined {
+  if (block.isVisible === false) return undefined;
+  if (block.type === "image") return block.logoImage?.name ?? block.url;
+  if (block.type === "signature" && !block.hide_signature)
+    return block.imageUrl;
+  return undefined;
+}
+
+export async function warmBlockImageCache(ctx: PdfContext, blocks: any[]) {
+  const urls = new Set<string>();
+  for (const block of blocks) {
+    const url = blockImageUrl(block);
+    if (url) urls.add(url);
+  }
+  await Promise.all(Array.from(urls, (url) => embedImageBytes(ctx, url)));
+}

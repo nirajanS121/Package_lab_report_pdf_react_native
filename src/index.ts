@@ -32,25 +32,28 @@ import { serializeNode } from "./htmlSerializer";
  * before we read the result.
  */
 export function renderReportHtml(props: PrintMapperProps): string {
-  // Silences act()'s "testing environment is not configured" console warning —
-  // we're using act() purely to force a synchronous flush, not for testing,
-  // and the warning otherwise reads as another failure in the app's logs.
+  // IS_REACT_NATIVE_TEST_ENVIRONMENT=true must be set BEFORE create() — it
+  // switches react-test-renderer to legacy-sync-root mode, which commits the
+  // tree synchronously inside create() without needing act().
+  //
+  // We deliberately do NOT wrap in act(): act() has an internal Scheduler
+  // dependency whose async-message-channel path can fail silently in Hermes
+  // release (assembleRelease) builds compiled with -O bytecode optimisation.
+  // Legacy-sync root commits inline, so act() is not needed for correctness.
   const globalScope = globalThis as any;
   const previousActFlag = globalScope.IS_REACT_ACT_ENVIRONMENT;
-  globalScope.IS_REACT_ACT_ENVIRONMENT = true;
-
-  // React's own escape hatch for using test-renderer inside React Native
-  // outside of Jest: silences its "is deprecated" console.error (which RN
-  // surfaces as a red ERROR log, not a mere warning) and switches it to the
-  // non-concurrent-only render mode meant for this exact use case.
   const previousRNTestFlag = globalScope.IS_REACT_NATIVE_TEST_ENVIRONMENT;
+
+  // IS_REACT_ACT_ENVIRONMENT=false suppresses React's "not wrapped in act()"
+  // warning that fires when test-renderer is used outside act() in a test env.
+  globalScope.IS_REACT_ACT_ENVIRONMENT = false;
   globalScope.IS_REACT_NATIVE_TEST_ENVIRONMENT = true;
 
   let renderer: TestRenderer.ReactTestRenderer;
   try {
-    TestRenderer.act(() => {
-      renderer = TestRenderer.create(React.createElement(ReportPrintMapper, { ...props, htmlPreview: true }));
-    });
+    renderer = TestRenderer.create(
+      React.createElement(ReportPrintMapper, { ...props, htmlPreview: true }),
+    );
   } finally {
     globalScope.IS_REACT_ACT_ENVIRONMENT = previousActFlag;
     globalScope.IS_REACT_NATIVE_TEST_ENVIRONMENT = previousRNTestFlag;

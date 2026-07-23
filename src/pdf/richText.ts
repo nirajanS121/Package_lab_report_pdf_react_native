@@ -15,13 +15,6 @@ function decodeEntities(text: string): string {
   return text.replace(ENTITY_PATTERN, (m) => ENTITY_MAP[m] ?? m);
 }
 
-/**
- * Parses the small HTML subset actually used in comment/endnote/remarks
- * fields (b/strong, i/em, u, br, p, div — anything else is stripped down to
- * its text content) into paragraphs of styled text runs, ready for
- * wrapRuns(). This is not a general HTML parser; it's scoped to what
- * dangerouslySetInnerHTML is fed in this codebase.
- */
 export function parseRichText(html: string | undefined | null): TextRun[][] {
   if (!html) return [[]];
 
@@ -69,7 +62,6 @@ export function parseRichText(html: string | undefined | null): TextRun[][] {
         italicStack.push(true);
       }
     }
-    // other tags (u, span, etc.) are ignored — only their text content survives
   }
   pushText(html.slice(lastIndex));
 
@@ -77,7 +69,6 @@ export function parseRichText(html: string | undefined | null): TextRun[][] {
   return nonEmpty.length > 0 ? nonEmpty : [[]];
 }
 
-/** Strips all tags, keeping only decoded text — used where we don't need styling. */
 export function stripHtml(html: string | undefined | null): string {
   if (!html) return "";
   return decodeEntities(html.replace(/<[^>]*>/g, "")).trim();

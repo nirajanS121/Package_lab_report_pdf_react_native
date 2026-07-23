@@ -2,60 +2,70 @@ import { PathoContentBlockProps } from "./type";
 import { isDataRow, isHeadingRow } from "./utils";
 import { groupAntibiotics } from "../../helper";
 
-
 interface Props {
   blockProps: PathoContentBlockProps | any;
   scaleFactor?: number;
   maxWidth: number;
   isFooterFixed?: boolean;
   lineHeight?: boolean;
-  onlyPreviewWatermark?: boolean
-  lastPageContent?: any
-  config?: any
+  onlyPreviewWatermark?: boolean;
+  lastPageContent?: any;
+  config?: any;
 }
 export const PathoContentBlock: React.FC<Props> = (props) => {
-  const { blockProps, scaleFactor = 1, isFooterFixed = false, onlyPreviewWatermark = false, lastPageContent } = props;
-  const { title, data, tableColumns = [], tableWidth, endNoteConfig, commentsConfig, config } = blockProps;
+  const {
+    blockProps,
+    scaleFactor = 1,
+    isFooterFixed = false,
+    onlyPreviewWatermark = false,
+    lastPageContent,
+  } = props;
+  const {
+    title,
+    data,
+    tableColumns = [],
+    tableWidth,
+    endNoteConfig,
+    commentsConfig,
+    config,
+  } = blockProps;
 
   const totalColumnWidth = tableColumns.reduce((sum: any, column: any) => {
     return sum + (column.configColumn.columnWidth || 0);
   }, 0);
   const updateMaxWidth = tableWidth ?? totalColumnWidth;
-  console.log(lastPageContent, config, "lastPageContentlastPageContentlastPageContentlastPageContent")
   const getTextStyle = (config: any, isHeader: boolean = false) => {
     const styleConfig = isHeader ? config.headerFormate : config.bodyFormate;
     return {
-      fontWeight: styleConfig?.isBold ? 'bold' : 'normal',
-      fontStyle: styleConfig?.isItalics ? 'italic' : 'normal',
-      textTransform: styleConfig?.isCapsLocks ? 'uppercase' : 'none',
-      fontSize: (styleConfig[isHeader ? 'headerFontSize' : 'bodyFontSize'] || 12) * scaleFactor,
-      textAlign: config?.alignment || 'left',
-      padding: '2px 5px',
+      fontWeight: styleConfig?.isBold ? "bold" : "normal",
+      fontStyle: styleConfig?.isItalics ? "italic" : "normal",
+      textTransform: styleConfig?.isCapsLocks ? "uppercase" : "none",
+      fontSize:
+        (styleConfig[isHeader ? "headerFontSize" : "bodyFontSize"] || 12) *
+        scaleFactor,
+      textAlign: config?.alignment || "left",
+      padding: "2px 5px",
     };
   };
 
   const getNoteCommentStyle = (config: any) => {
     return {
-      fontWeight: config?.isBold ? 'bold' : 'normal',
-      fontStyle: config?.isItalics ? 'italic' : 'normal',
-      textTransform: config?.isCapsLocks ? 'uppercase' : 'none',
+      fontWeight: config?.isBold ? "bold" : "normal",
+      fontStyle: config?.isItalics ? "italic" : "normal",
+      textTransform: config?.isCapsLocks ? "uppercase" : "none",
       fontSize: (config?.fontSize || 12) * scaleFactor,
-      textAlign: 'left',
-      padding: '0 5px',
+      textAlign: "left",
+      padding: "0 5px",
     };
   };
 
   const hasUnitRef = !data?.[0]?.data?.[0]?.hideUnitRef;
-  // const { height, width, header, footer } = config;
-  // console.log(header, "headerheaderheaderheader")
-  // const footerHeight = footer?.isEnabled ? footer?.height : footer?.height;
-  // const footerStart = +height - footerHeight;
   return (
     <div
       style={{
         width: (updateMaxWidth - 15) * scaleFactor,
         fontSize: 14 * scaleFactor,
-        padding: "4px"
+        padding: "4px",
       }}
     >
       <div
@@ -70,17 +80,16 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
 
       <div
         style={{
-          display: 'flex',
-          border: '1px solid #000000',
+          display: "flex",
+          border: "1px solid #000000",
           fontWeight: 600,
-          pageBreakInside: 'avoid',
-          borderCollapse: 'collapse',
+          pageBreakInside: "avoid",
+          borderCollapse: "collapse",
         }}
       >
         {tableColumns.map((col: any, idx: any) => (
           <div
             key={idx}
-            //@ts-ignore
             style={{
               width: col.configColumn.columnWidth,
               ...getTextStyle(col.configColumn, true),
@@ -91,15 +100,18 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
         ))}
         {hasUnitRef && onlyPreviewWatermark && (
           <>
-            <div style={{ width: '80px', textAlign: 'start' }}>Result Entry By</div>
-            <div style={{ width: '80px', textAlign: 'start' }}>Verified By</div>
+            <div style={{ width: "80px", textAlign: "start" }}>
+              Result Entry By
+            </div>
+            <div style={{ width: "80px", textAlign: "start" }}>Verified By</div>
           </>
         )}
       </div>
 
       <div>
         {data?.map((profile: any, index: any) => {
-          const previousTitle = index > 0 ? data?.[index - 1]?.department_name : null;
+          const previousTitle =
+            index > 0 ? data?.[index - 1]?.department_name : null;
 
           return (
             <div key={index}>
@@ -182,31 +194,54 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                       {isDataRow(item) && (
                         <div
                           style={{
-                            display: 'flex',
-                            border: '1px solid #aaa9a9',
-                            borderCollapse: 'collapse',
-                            padding: "2px"
+                            display: "flex",
+                            border: "1px solid #aaa9a9",
+                            borderCollapse: "collapse",
+                            padding: "2px",
                           }}
                         >
                           {tableColumns.map((col: any, idx: number) => {
-                            const isOrganism = item.result_type === "organism" || item.result_type === "freetext";
+                            const isOrganism =
+                              item.result_type === "organism" ||
+                              item.result_type === "freetext";
                             const hasUnitValue = !!item.unit;
                             const hasRefValue = !!item.referenceRange;
 
-                            const skipUnit = isOrganism && !hasUnitValue && (item.result?.length ?? 0) > 20;
-                            const skipRef = isOrganism && !hasRefValue && (item.result?.length ?? 0) > 20;
-                            const unitColumnWidth = tableColumns.find((c: any) => c.valueKey === "unit")?.configColumn?.columnWidth ?? 0;
-                            const refColumnWidth = tableColumns.find((c: any) => c.valueKey === "referenceRange")?.configColumn?.columnWidth ?? 0;
+                            const skipUnit =
+                              isOrganism &&
+                              !hasUnitValue &&
+                              (item.result?.length ?? 0) > 20;
+                            const skipRef =
+                              isOrganism &&
+                              !hasRefValue &&
+                              (item.result?.length ?? 0) > 20;
+                            const unitColumnWidth =
+                              tableColumns.find(
+                                (c: any) => c.valueKey === "unit",
+                              )?.configColumn?.columnWidth ?? 0;
+                            const refColumnWidth =
+                              tableColumns.find(
+                                (c: any) => c.valueKey === "referenceRange",
+                              )?.configColumn?.columnWidth ?? 0;
                             let adjustedWidth = col.configColumn.columnWidth;
 
                             if (col.valueKey === "result") {
-                              adjustedWidth += (skipUnit ? unitColumnWidth : 0) + (skipRef ? refColumnWidth : 0);
+                              adjustedWidth +=
+                                (skipUnit ? unitColumnWidth : 0) +
+                                (skipRef ? refColumnWidth : 0);
                             }
-                            if ((col.valueKey === "unit" && skipUnit) || (col.valueKey === "referenceRange" && skipRef)) {
+                            if (
+                              (col.valueKey === "unit" && skipUnit) ||
+                              (col.valueKey === "referenceRange" && skipRef)
+                            ) {
                               return null;
                             }
 
-                            if (!hasUnitRef && (col.valueKey === "unit" || col.valueKey === "referenceRange")) {
+                            if (
+                              !hasUnitRef &&
+                              (col.valueKey === "unit" ||
+                                col.valueKey === "referenceRange")
+                            ) {
                               return null;
                             }
 
@@ -214,7 +249,6 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                               return (
                                 <div
                                   key={idx}
-                                  //@ts-ignore
                                   style={{
                                     width: adjustedWidth,
                                     ...getTextStyle(col.configColumn),
@@ -225,39 +259,33 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                                     style={{
                                       fontWeight:
                                         item.flag === "H" ||
-                                          item.flag === "L" ||
-                                          item.flag === "CL" ||
-                                          item.flag === "CH" ||
-                                          item?.abnormal === true
+                                        item.flag === "L" ||
+                                        item.flag === "CL" ||
+                                        item.flag === "CH" ||
+                                        item?.abnormal === true
                                           ? 800
                                           : "inherit",
                                     }}
                                   >
-                                    <span dangerouslySetInnerHTML={{ __html: item.result }} />
+                                    <span
+                                      dangerouslySetInnerHTML={{
+                                        __html: item.result,
+                                      }}
+                                    />
                                     {item?.showFlag ? `[${item?.flag}]` : ""}
-
-                                    {/* {(item?.specimen_name || item?.method) && (
-                                      <div style={{ fontSize: 8 }}>
-                                        (
-                                        {item?.specimen_name && (
-                                          <>
-                                            {item.specimen_name}
-                                            {item?.method ? ", " : ""}
-                                          </>
-                                        )}
-                                        {item?.method && <i>{item.method}</i>})
-                                      </div>
-                                    )} */}
                                   </div>
                                 </div>
                               );
                             }
 
-                            if (col.valueKey === "unit" && hasUnitRef && !skipUnit) {
+                            if (
+                              col.valueKey === "unit" &&
+                              hasUnitRef &&
+                              !skipUnit
+                            ) {
                               return (
                                 <div
                                   key={idx}
-                                  //@ts-ignore
                                   style={{
                                     width: adjustedWidth,
                                     ...getTextStyle(col.configColumn),
@@ -268,33 +296,37 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                               );
                             }
 
-                            if (col.valueKey === "referenceRange" && hasUnitRef && !skipRef) {
+                            if (
+                              col.valueKey === "referenceRange" &&
+                              hasUnitRef &&
+                              !skipRef
+                            ) {
                               return (
                                 <div
                                   key={idx}
-                                  //@ts-ignore
                                   style={{
                                     width: adjustedWidth,
                                     ...getTextStyle(col.configColumn),
                                   }}
                                 >
-                                  {item.result_type === "freetext" && item.freetext_range ? (
+                                  {item.result_type === "freetext" &&
+                                  item.freetext_range ? (
                                     <div
-                                      dangerouslySetInnerHTML={{ __html: item.freetext_range }}
+                                      dangerouslySetInnerHTML={{
+                                        __html: item.freetext_range,
+                                      }}
                                       className="text-[10px]"
                                     />
                                   ) : (
-                                    item.referenceRange ?? "-"
+                                    (item.referenceRange ?? "-")
                                   )}
                                 </div>
                               );
                             }
-                            //@ts-ignore
                             let value = item[col.valueKey] ?? "-";
                             return (
                               <div
                                 key={idx}
-                                //@ts-ignore
                                 style={{
                                   width: adjustedWidth,
                                   ...getTextStyle(col.configColumn),
@@ -303,7 +335,6 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                                 <div
                                   style={{
                                     pageBreakInside: "auto",
-                                    // display: "flex",
                                   }}
                                 >
                                   <div
@@ -320,14 +351,9 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                                   </div>
                                   {(item?.specimen_name || item?.method) && (
                                     <div style={{ fontSize: 8 }}>
-                                      {/* ( */}
                                       {item?.specimen_name && (
-                                        <>
-                                          {item.specimen_name}
-                                          {/* {item?.method ? ", " : ""} */}
-                                        </>
+                                        <>{item.specimen_name}</>
                                       )}
-                                      {/* {item?.method && <i>{item.method}</i>}) */}
                                     </div>
                                   )}
                                 </div>
@@ -336,17 +362,28 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                           })}
                           {hasUnitRef && onlyPreviewWatermark && (
                             <>
-                              <div style={{ width: '80px', textAlign: 'start', fontSize: '10px' }}>
-                                {item?.finding_posted_user_name ?? '-'}
+                              <div
+                                style={{
+                                  width: "80px",
+                                  textAlign: "start",
+                                  fontSize: "10px",
+                                }}
+                              >
+                                {item?.finding_posted_user_name ?? "-"}
                               </div>
-                              <div style={{ width: '80px', textAlign: 'start', fontSize: '10px' }}>
-                                {item?.verified_user_name ?? '-'}
+                              <div
+                                style={{
+                                  width: "80px",
+                                  textAlign: "start",
+                                  fontSize: "10px",
+                                }}
+                              >
+                                {item?.verified_user_name ?? "-"}
                               </div>
                             </>
                           )}
                         </div>
                       )}
-{console.log(item?.antibiotic_results,"asdsdasdasd")}
                       <AntibioticDisplay
                         antibiotic_results={item?.antibiotic_results ?? []}
                         level={item.level + 1}
@@ -356,32 +393,29 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                         <div
                           style={{
                             height: "25px",
-                            padding: '0 5px',
-                            borderLeft: '1px solid #aaa9a9',
-                            borderRight: '1px solid #aaa9a9',
-                            borderBottom: '1px solid #aaa9a9',
+                            padding: "0 5px",
+                            borderLeft: "1px solid #aaa9a9",
+                            borderRight: "1px solid #aaa9a9",
+                            borderBottom: "1px solid #aaa9a9",
                           }}
                         >
-                          <div
-                            //@ts-ignore
-                            style={getNoteCommentStyle(commentsConfig)}>Comment :</div>
+                          <div style={getNoteCommentStyle(commentsConfig)}>
+                            Comment :
+                          </div>
                           <div
                             style={{
-                              whiteSpace: 'normal',
-                              overflowWrap: 'anywhere',
-                              textAlign: 'left',
-                              padding: '0 5px',
+                              whiteSpace: "normal",
+                              overflowWrap: "anywhere",
+                              textAlign: "left",
+                              padding: "0 5px",
                             }}
                           >
                             <div style={{ marginTop: -8 }}>
-                              {/* <CkEditorBase
-                                value={item.comment}
-                                setEditor={() => { }}
-                                hideBorder
-                              /> */}
                               <div
                                 className="ck-content-html"
-                                dangerouslySetInnerHTML={{ __html: item.comment }}
+                                dangerouslySetInnerHTML={{
+                                  __html: item.comment,
+                                }}
                               />
                             </div>
                           </div>
@@ -389,28 +423,23 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                       )}
 
                       {item.endnote && (
-                        <div style={{ margin: '6px 0' }}>
+                        <div style={{ margin: "6px 0" }}>
                           <div
                             style={{
-                              wordWrap: 'break-word',
-                              overflowWrap: 'anywhere',
-                              textAlign: 'left',
+                              wordWrap: "break-word",
+                              overflowWrap: "anywhere",
+                              textAlign: "left",
                             }}
                           >
-                            <div
-                              //@ts-ignore
-                              style={getNoteCommentStyle(endNoteConfig)}>
-                              {item.display_nameEndnote || 'EndNote'} :
+                            <div style={getNoteCommentStyle(endNoteConfig)}>
+                              {item.display_nameEndnote || "EndNote"} :
                             </div>
-                            <div style={{ border: '1px solid #aaa9a9' }}>
-                              {/* <CkEditorBase
-                                value={item.endnote}
-                                setEditor={() => { }}
-                                hideBorder
-                              /> */}
+                            <div style={{ border: "1px solid #aaa9a9" }}>
                               <div
                                 className="ck-content-html"
-                                dangerouslySetInnerHTML={{ __html: item.endnote }}
+                                dangerouslySetInnerHTML={{
+                                  __html: item.endnote,
+                                }}
                               />
                             </div>
                           </div>
@@ -438,27 +467,6 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
                   />
                 </div>
               )}
-              {/* {data?.length === index + 1 && (
-                <div>
-                  {lastPageContent?.map((block: any) => (
-                    <div
-                      key={block.key}
-                      style={{
-                        left: `${block.x}px`,
-                        top: `${block.y - footerStart}px`,
-                        boxSizing: "border-box",
-                        whiteSpace: "nowrap",
-                        textAlign: "center",
-                        position: "absolute",
-                        display: block.isVisible ? "block" : "none",
-                      }}
-                    >
-                      <BlockRender block={block} maxWidth={width} />
-                    </div>
-                  ))}
-                </div>
-
-              )} */}
             </div>
           );
         })}
@@ -466,7 +474,6 @@ export const PathoContentBlock: React.FC<Props> = (props) => {
     </div>
   );
 };
-
 
 interface ColumnContainerProps {
   children: React.ReactNode;
@@ -494,8 +501,8 @@ export const ColumnContainer: React.FC<ColumnContainerProps> = (props) => {
 };
 
 export const AntibioticDisplay = ({ antibiotic_results }: any) => {
-  const { sensitive, resistant, partiallyResistant } = groupAntibiotics(antibiotic_results);
-console.log(sensitive,resistant,"sensitivesensitivesensitivesensitive")
+  const { sensitive, resistant, partiallyResistant } =
+    groupAntibiotics(antibiotic_results);
   return (
     <>
       {antibiotic_results.length > 0 && (
@@ -530,7 +537,10 @@ console.log(sensitive,resistant,"sensitivesensitivesensitivesensitive")
                       style={{
                         textAlign: "center",
                         padding: "4px 8px",
-                        borderRight: partiallyResistant.length > 0 ? "1px solid #aaa9a9" : "",
+                        borderRight:
+                          partiallyResistant.length > 0
+                            ? "1px solid #aaa9a9"
+                            : "",
                       }}
                     >
                       Resistant
@@ -541,7 +551,10 @@ console.log(sensitive,resistant,"sensitivesensitivesensitivesensitive")
                       style={{
                         textAlign: "center",
                         padding: "4px 8px",
-                        borderRight: partiallyResistant.length > 0 ? "1px solid #aaa9a9" : "",
+                        borderRight:
+                          partiallyResistant.length > 0
+                            ? "1px solid #aaa9a9"
+                            : "",
                       }}
                     >
                       Partially Sensitive
@@ -609,7 +622,10 @@ console.log(sensitive,resistant,"sensitivesensitivesensitivesensitive")
                       style={{
                         padding: "4px 8px",
                         textAlign: "center",
-                        borderRight: partiallyResistant.length > 0 ? "1px solid #aaa9a9" : "",
+                        borderRight:
+                          partiallyResistant.length > 0
+                            ? "1px solid #aaa9a9"
+                            : "",
                       }}
                     >
                       {partiallyResistant.map((item: any) => {

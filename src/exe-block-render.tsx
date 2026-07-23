@@ -1,6 +1,9 @@
 import React from "react";
 import { BarcodeBlock } from "./basic-blocks/barcode";
-import { isBarcodeBlock, isHorizontalLineBorder } from "./basic-blocks/barcode/utils";
+import {
+  isBarcodeBlock,
+  isHorizontalLineBorder,
+} from "./basic-blocks/barcode/utils";
 import { isCaptionBlock } from "./basic-blocks/caption/utils";
 import { ImageBlock } from "./basic-blocks/image";
 import { isImageBlock } from "./basic-blocks/image/utils";
@@ -33,9 +36,8 @@ const ExeBlockRender: React.FC<ExeBlockRenderProps> = (props) => {
       ) : isHorizontalLineBorder(block) ? (
         <div
           style={{
-            //@ts-ignore
             width: block.width,
-            borderBottom: '2px solid black',
+            borderBottom: "2px solid black",
           }}
         />
       ) : isQrcodeBlock(block) ? (
@@ -43,19 +45,34 @@ const ExeBlockRender: React.FC<ExeBlockRenderProps> = (props) => {
       ) : isValueBlock(block) ? (
         <ExeValueBlock blockProps={block} scaleFactor={scaleFactor} />
       ) : isCaptionBlock(block) ? (
-        <ExeCaptionBlock blockProps={block} scaleFactor={scaleFactor} maxWidth={maxWidth} />
+        <ExeCaptionBlock
+          blockProps={block}
+          scaleFactor={scaleFactor}
+          maxWidth={maxWidth}
+        />
       ) : isSignatureBlock(block) ? (
         <SignatureBlock blockProps={block} scaleFactor={scaleFactor} />
       ) : isImageBlock(block) ? (
-        <ImageBlock logoImage={logoImage} blockProps={block} scaleFactor={scaleFactor} />
+        <ImageBlock
+          logoImage={logoImage}
+          blockProps={block}
+          scaleFactor={scaleFactor}
+        />
       ) : isPathoContentBlock(block) ? (
-        <PathoContentBlock blockProps={block} scaleFactor={scaleFactor} maxWidth={maxWidth} />
+        <PathoContentBlock
+          blockProps={block}
+          scaleFactor={scaleFactor}
+          maxWidth={maxWidth}
+        />
       ) : isHistoContentBlock(block) ? (
-        <HistoContentBlock blockProps={block} scaleFactor={scaleFactor} maxWidth={maxWidth} />
+        <HistoContentBlock
+          blockProps={block}
+          scaleFactor={scaleFactor}
+          maxWidth={maxWidth}
+        />
       ) : (
         <>Block Not Implemented</>
       )}
-
     </>
   );
 };

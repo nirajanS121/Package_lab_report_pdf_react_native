@@ -10,9 +10,6 @@ export const ImageBlock: React.FC<Props> = (props) => {
   const { blockProps, scaleFactor = 1, logoImage } = props;
   const { url, label, height, width } = blockProps;
 
-  // console.log(logoImage,"logoImagelogoImagelogoImage")
-  // console.log(blockProps,"blockblockblockblock")
-
   return (
     <div
       style={{

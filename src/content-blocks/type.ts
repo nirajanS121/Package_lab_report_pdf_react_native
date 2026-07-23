@@ -17,7 +17,6 @@ import { IEstimatedSummaryBillContentBlock } from "./estimated-bill-summary/type
 import { LineBlockInternalProps } from "../basic-blocks/Line/type";
 import { ICreditClearanceBlock } from "./credit-clearance/type";
 
-// Each block type extends a base set of properties and includes a unique type field.
 export type BlockProps =
   | CaptionBlockProps
   | ValueBlockProps
@@ -37,8 +36,6 @@ export type BlockProps =
   | IEstimatedBillDetailContentBlock
   | IEstimatedSummaryBillContentBlock
   | ICreditClearanceBlock;
-
-// Union type that represents all possible block types in the system.
 
 export type BlockTypeProps =
   | "caption"
@@ -87,10 +84,6 @@ export type BlockTypeProps =
 
 export type IBlockLocation = "header" | "footer" | "content";
 export type ITextAlignment = "left" | "center" | "right";
-/**
- * BaseBlockProps contains common properties shared by all block types.
- * This interface is meant to be extended by specific block types, not used directly.
- */
 export interface BaseBlockProps {
   key: string;
   isVisible: boolean;

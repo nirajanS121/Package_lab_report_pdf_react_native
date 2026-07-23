@@ -1,6 +1,9 @@
 import React from "react";
 import { BarcodeBlock } from "./basic-blocks/barcode";
-import { isBarcodeBlock, isHorizontalLineBorder } from "./basic-blocks/barcode/utils";
+import {
+  isBarcodeBlock,
+  isHorizontalLineBorder,
+} from "./basic-blocks/barcode/utils";
 import { CaptionBlock } from "./basic-blocks/caption";
 import { isCaptionBlock } from "./basic-blocks/caption/utils";
 import { ImageBlock } from "./basic-blocks/image";
@@ -18,7 +21,6 @@ import { isHistoContentBlock } from "./content-blocks/histo/utils";
 import { PathoContentBlock } from "./content-blocks/patho";
 import { isPathoContentBlock } from "./content-blocks/patho/utils";
 
-
 interface BlockRenderProps {
   block: any;
   maxWidth: number;
@@ -35,7 +37,6 @@ const BlockRender: React.FC<BlockRenderProps> = (props) => {
       ) : isHorizontalLineBorder(block) ? (
         <div
           style={{
-            //@ts-ignore
             width: block.width,
             borderBottom: "2px solid black",
           }}
@@ -45,17 +46,33 @@ const BlockRender: React.FC<BlockRenderProps> = (props) => {
       ) : isValueBlock(block) ? (
         <ValueBlock blockProps={block} scaleFactor={scaleFactor} />
       ) : isCaptionBlock(block) ? (
-        <CaptionBlock blockProps={block} scaleFactor={scaleFactor} maxWidth={maxWidth} />
+        <CaptionBlock
+          blockProps={block}
+          scaleFactor={scaleFactor}
+          maxWidth={maxWidth}
+        />
       ) : isSignatureBlock(block) ? (
         <SignatureBlock blockProps={block} scaleFactor={scaleFactor} />
       ) : isLineBlock(block) ? (
         <LineBlock blockProps={block} scaleFactor={scaleFactor} />
       ) : isImageBlock(block) ? (
-        <ImageBlock logoImage={logoImage} blockProps={block} scaleFactor={scaleFactor} />
+        <ImageBlock
+          logoImage={logoImage}
+          blockProps={block}
+          scaleFactor={scaleFactor}
+        />
       ) : isPathoContentBlock(block) ? (
-        <PathoContentBlock blockProps={block} scaleFactor={scaleFactor} maxWidth={maxWidth} />
+        <PathoContentBlock
+          blockProps={block}
+          scaleFactor={scaleFactor}
+          maxWidth={maxWidth}
+        />
       ) : isHistoContentBlock(block) ? (
-        <HistoContentBlock blockProps={block} scaleFactor={scaleFactor} maxWidth={maxWidth} />
+        <HistoContentBlock
+          blockProps={block}
+          scaleFactor={scaleFactor}
+          maxWidth={maxWidth}
+        />
       ) : (
         <>Block Not Implemented</>
       )}

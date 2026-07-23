@@ -1,17 +1,19 @@
-
 import { groupByProfile } from "../helper";
 
 export function getPages(data: Array<any>): any[][] {
-  const pageMap: Record<string, any[]> = data.reduce((acc, item) => {
-    const key = item.separate_page ? item?.name : item?.department_name;
+  const pageMap: Record<string, any[]> = data.reduce(
+    (acc, item) => {
+      const key = item.separate_page ? item?.name : item?.department_name;
 
-    if (!acc[key]) {
-      acc[key] = [];
-    }
+      if (!acc[key]) {
+        acc[key] = [];
+      }
 
-    acc[key].push(item);
-    return acc;
-  }, {} as Record<string, any[]>);
+      acc[key].push(item);
+      return acc;
+    },
+    {} as Record<string, any[]>,
+  );
 
   return Object.values(pageMap);
 }
@@ -19,7 +21,6 @@ export function getPages(data: Array<any>): any[][] {
 export const getTableContent = (page: any, pageBreakRule: string) => {
   const tableProfiles: any[] = [];
 
-  // Group the test items by profile
   const group = groupByProfile(page);
 
   Object.entries(group).forEach(([profileName, items]) => {
@@ -30,11 +31,13 @@ export const getTableContent = (page: any, pageBreakRule: string) => {
 
       let level = profileName !== "-1" ? 1 : 0;
 
-      const previousDepartmentName = index > 0 ? items[index - 1]?.department_name?.toLowerCase() : null;
-      // Heading Level is required as the first heading acts as parent to other headings
+      const previousDepartmentName =
+        index > 0 ? items[index - 1]?.department_name?.toLowerCase() : null;
 
       const isAddDepartmentHeading =
-        index !== 0 && item?.department_name?.toLowerCase() !== previousDepartmentName && pageBreakRule === "0";
+        index !== 0 &&
+        item?.department_name?.toLowerCase() !== previousDepartmentName &&
+        pageBreakRule === "0";
 
       if (isAddDepartmentHeading) {
         tableRows.push({
@@ -67,9 +70,15 @@ export const getTableContent = (page: any, pageBreakRule: string) => {
             flag: testDetail.flag,
             unit: testDetail.uom_name,
             referenceRange: testDetail.display_range,
-            endnote: patient_test_details.length - 1 === index ? patient_pre_footer?.endnote ?? undefined : undefined,
-            comment: patient_test_details.length - 1 === index ? patient_pre_footer?.comment ?? undefined : undefined,
-            abnormal:testDetail?.abnormal,
+            endnote:
+              patient_test_details.length - 1 === index
+                ? (patient_pre_footer?.endnote ?? undefined)
+                : undefined,
+            comment:
+              patient_test_details.length - 1 === index
+                ? (patient_pre_footer?.comment ?? undefined)
+                : undefined,
+            abnormal: testDetail?.abnormal,
             display_nameEndnote: patient_pre_footer?.display_name,
             level: headingLevel > 1 ? level + 1 : level,
             method: testDetail.method_name,
@@ -77,8 +86,8 @@ export const getTableContent = (page: any, pageBreakRule: string) => {
             antibiotic_results: testDetail.antibiotic_results,
             result_type: testDetail.result_type,
             freetext_range: testDetail.freetext_range,
-            finding_posted_user_name:item?.finding_posted_user_name,
-            verified_user_name:item?.verified_user_name
+            finding_posted_user_name: item?.finding_posted_user_name,
+            verified_user_name: item?.verified_user_name,
           };
           tableRows.push(data_row);
         }
@@ -88,7 +97,8 @@ export const getTableContent = (page: any, pageBreakRule: string) => {
     const profileData: any = {
       title: profileName === "-1" ? undefined : profileName,
       data: tableRows,
-      department_name: pageBreakRule === "0" ? items?.[0]?.department_name : null,
+      department_name:
+        pageBreakRule === "0" ? items?.[0]?.department_name : null,
       remarks: items[0].profile_remarks,
     };
     tableProfiles.push(profileData);
@@ -99,8 +109,14 @@ export const getTableContent = (page: any, pageBreakRule: string) => {
 export const getDescriptionContent = (page: any) => {
   const tableRows: Array<{ title: string; description: string }> = [];
 
-  const { patient_template_detail, patient_template_content, is_finding_template_content } = page[0];
-  const source = is_finding_template_content ? patient_template_content : patient_template_detail;
+  const {
+    patient_template_detail,
+    patient_template_content,
+    is_finding_template_content,
+  } = page[0];
+  const source = is_finding_template_content
+    ? patient_template_content
+    : patient_template_detail;
 
   const reportTitle = source?.[0]?.report_title;
   const subTitle = source?.[0]?.report_sub_title;

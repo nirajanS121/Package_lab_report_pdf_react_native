@@ -13,12 +13,6 @@ export const BarcodeBlock: React.FC<Props> = (props) => {
 
   if (!(valueUpdate?.length > 0)) return "";
 
-  // react-barcode (JsBarcode under the hood) draws itself imperatively onto
-  // a real DOM node via a ref, after mount — there's no real DOM in the
-  // React Native static-render path (react-test-renderer runs effects but
-  // has no host environment to hand back), so calling it there throws
-  // "InvalidElementException: Not supported type to render on" instead of
-  // just rendering blank. Skip it there; render normally in web/Electron.
   if (typeof document === "undefined") {
     return null;
   }
@@ -31,7 +25,6 @@ export const BarcodeBlock: React.FC<Props> = (props) => {
       value={valueUpdate}
       height={fontSize * 2 * scaleFactor}
       width={1.6}
-      // width={fontSize * 0.075 * scaleFactor}
       fontSize={fontSize * scaleFactor}
       marginBottom={5}
       background="transparent"

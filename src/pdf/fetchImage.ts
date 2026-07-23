@@ -7,8 +7,13 @@ const cache = new Map<string, Promise<FetchedImage | null>>();
 
 async function fetchImageUncached(url: string): Promise<FetchedImage | null> {
   try {
-    const controller = typeof AbortController !== "undefined" ? new AbortController() : undefined;
-    const timeoutId = controller ? setTimeout(() => controller.abort(), 10000) : undefined;
+    const controller =
+      typeof AbortController !== "undefined"
+        ? new AbortController()
+        : undefined;
+    const timeoutId = controller
+      ? setTimeout(() => controller.abort(), 10000)
+      : undefined;
     const response = await fetch(url, { signal: controller?.signal });
     if (timeoutId) clearTimeout(timeoutId);
     if (!response.ok) return null;
@@ -22,7 +27,6 @@ async function fetchImageUncached(url: string): Promise<FetchedImage | null> {
   }
 }
 
-/** Fetches an image once per unique URL per process, even across concurrent callers. */
 export function fetchImage(url: string): Promise<FetchedImage | null> {
   if (!url) return Promise.resolve(null);
   if (!cache.has(url)) {

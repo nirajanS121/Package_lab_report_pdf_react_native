@@ -2,11 +2,14 @@ import { PDFDocument, StandardFonts } from "pdf-lib";
 import { getPages, mapValueToBlock } from "../helper";
 import { getTableContent } from "../ReportPrintMapper/helper";
 import type { PrintMapperProps } from "../ReportPrintMapper";
-import { PdfContext } from "./blocks";
+import { createPdfContext } from "./blocks";
 import { PageManager } from "./pageManager";
 import { drawPathoTable } from "./pathoTable";
 
-function findTemplate(templates: any[] | undefined, departmentType: string | null) {
+function findTemplate(
+  templates: any[] | undefined,
+  departmentType: string | null,
+) {
   return templates?.find((t) => {
     let arr: any[];
     if (Array.isArray(t.dep_type)) {
@@ -23,39 +26,39 @@ function findTemplate(templates: any[] | undefined, departmentType: string | nul
   });
 }
 
-/**
- * Renders a report directly to PDF bytes using pdf-lib — no WebView, no
- * Android PrintManager/createPrintDocumentAdapter, no HTML/CSS layout engine
- * at all. Walks the exact same data (getPages/getTableContent/mapValueToBlock
- * — pure functions shared with the HTML renderer) and draws each block
- * directly onto PDF pages instead of emitting markup.
- *
- * Currently covers the PATHO (pathology table) content-block type, which is
- * what every report this package has been used for so far uses. HISTO
- * (histology description-based reports) is not implemented here yet — that's
- * a materially different content shape (title/subtitle/description, not
- * tabular) and would need its own renderer.
- */
-export async function renderReportPdf(props: PrintMapperProps): Promise<Uint8Array> {
-  const { table_data, headerImage, footerImage, watermark, data, signatures, pageBreakRule = "0", printTemplateDesign } = props;
+export async function renderReportPdf(
+  props: PrintMapperProps,
+): Promise<Uint8Array> {
+  const {
+    table_data,
+    headerImage,
+    footerImage,
+    watermark,
+    data,
+    signatures,
+    pageBreakRule = "0",
+    printTemplateDesign,
+  } = props;
 
   const templates = printTemplateDesign;
   const pages = getPages(table_data, signatures, pageBreakRule);
 
   const pdfDoc = await PDFDocument.create();
-  const ctx: PdfContext = {
-    pdfDoc,
-    fonts: {
-      regular: await pdfDoc.embedFont(StandardFonts.Helvetica),
-      bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
-      italic: await pdfDoc.embedFont(StandardFonts.HelveticaOblique),
-      boldItalic: await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique),
-    },
-  };
+  const ctx = createPdfContext(pdfDoc, {
+    regular: await pdfDoc.embedFont(StandardFonts.Helvetica),
+    bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
+    italic: await pdfDoc.embedFont(StandardFonts.HelveticaOblique),
+    boldItalic: await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique),
+  });
 
   if (pages.length === 0) {
     const page = pdfDoc.addPage([595, 842]);
-    page.drawText("Nothing to Print", { x: 40, y: 800, size: 14, font: ctx.fonts.regular });
+    page.drawText("Nothing to Print", {
+      x: 40,
+      y: 800,
+      size: 14,
+      font: ctx.fonts.regular,
+    });
     return pdfDoc.save();
   }
 
@@ -70,7 +73,12 @@ export async function renderReportPdf(props: PrintMapperProps): Promise<Uint8Arr
     const template = findTemplate(templates, departmentType);
     if (!template) {
       const pdfPage = pdfDoc.addPage([595, 842]);
-      pdfPage.drawText(`${departmentType} Template Not Found`, { x: 40, y: 800, size: 14, font: ctx.fonts.regular });
+      pdfPage.drawText(`${departmentType} Template Not Found`, {
+        x: 40,
+        y: 800,
+        size: 14,
+        font: ctx.fonts.regular,
+      });
       continue;
     }
 
@@ -82,8 +90,12 @@ export async function renderReportPdf(props: PrintMapperProps): Promise<Uint8Arr
       ...page?.[0],
       patient: { ...data, agent_name: agentName },
       signatures:
-        signatures && signatures?.[labId]?.[patientTestId] ? Object.values(signatures[labId][patientTestId]).flat() : null,
-      referral_doctor: page?.[0].agent_doctor ? page?.[0].agent_doctor : page?.[0].referral_doctor,
+        signatures && signatures?.[labId]?.[patientTestId]
+          ? Object.values(signatures[labId][patientTestId]).flat()
+          : null,
+      referral_doctor: page?.[0].agent_doctor
+        ? page?.[0].agent_doctor
+        : page?.[0].referral_doctor,
     };
 
     const headerBlocks = template.content_blocks
@@ -122,12 +134,15 @@ export async function renderReportPdf(props: PrintMapperProps): Promise<Uint8Arr
         x: contentBlock.x,
       });
     } else {
-      pageManager.page.drawText(`${departmentType} report type not yet supported by the PDF renderer`, {
-        x: contentBlock.x,
-        y: pageManager.pageHeight - pageManager.contentTop - 20,
-        size: 12,
-        font: ctx.fonts.regular,
-      });
+      pageManager.page.drawText(
+        `${departmentType} report type not yet supported by the PDF renderer`,
+        {
+          x: contentBlock.x,
+          y: pageManager.pageHeight - pageManager.contentTop - 20,
+          size: 12,
+          font: ctx.fonts.regular,
+        },
+      );
     }
   }
 

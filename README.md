@@ -7,7 +7,7 @@ report engine, two output modes:
 - **Web / Electron** — the original React components (`ReportPrintMapper`,
   `PageRender`, block renderers) rendered directly in the DOM, exactly as
   `kiosk-frontend-app` does today.
-- **React Native** — `renderReportHtml(props)` runs the *same* components
+- **React Native** — `renderReportHtml(props)` runs the _same_ components
   through `react-test-renderer` and serializes the resulting element tree to
   an HTML string. `react-dom/server` was tried first, but its browser build
   assumes browser/Node globals (`MessageChannel` among them) that Hermes/JSC
@@ -54,7 +54,6 @@ IPC — nothing changes from the current app.
 ```tsx
 import { ReportWebView, printReport } from "lab-pdf-view-react-native/native";
 
-// On-screen preview:
 <ReportWebView
   style={{ flex: 1 }}
   headerImage={organization.header}
@@ -66,8 +65,15 @@ import { ReportWebView, printReport } from "lab-pdf-view-react-native/native";
   printTemplateDesign={report_templates}
 />;
 
-// Or print directly, no preview:
-await printReport({ data, table_data, signatures, printTemplateDesign, headerImage, footerImage, watermark });
+await printReport({
+  data,
+  table_data,
+  signatures,
+  printTemplateDesign,
+  headerImage,
+  footerImage,
+  watermark,
+});
 ```
 
 Both take the exact same JSON payload your API already returns for lab
@@ -80,7 +86,7 @@ The report layout is pixel-precise: absolute-positioned blocks, HTML
 layout engine has no equivalent for tables or CSS print pagination, so
 rebuilding every block as native components would mean re-deriving that
 layout logic and losing exact fidelity with the designed templates. Reusing
-the existing components and only changing the *output target* (DOM vs. HTML
+the existing components and only changing the _output target_ (DOM vs. HTML
 string) keeps both platforms byte-for-byte consistent with zero duplicated
 layout logic.
 

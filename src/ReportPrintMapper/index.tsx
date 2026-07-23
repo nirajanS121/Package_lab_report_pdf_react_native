@@ -45,7 +45,6 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
     footerNotFixedForceFully,
     printTemplateDesign
   } = props;
-  // import { useReactToPrint } from "react-to-print";
   const response = {
     data: printTemplateDesign,
     rules: []
@@ -54,13 +53,11 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
   const templates = response?.data;
   const getRules = response?.rules;
   const pages = getPages(table_data, signatures, pageBreakRule);
-  console.log(pages, "pagespagespagespagespages")
   const isTitleDescHorizontal = getRules?.some(
     (row: any) => row?.key === "title_desc_vertical" && row?.value === "0"
   );
 
   const departmentTypeDirect = pages?.[0]?.[0]?.department_type ?? null;
-  console.log(departmentTypeDirect, "departmentTypeDirectdepartmentTypeDirectdepartmentTypeDirect")
   const templateDirect = templates?.find((t: any) => {
     let arr;
     if (Array.isArray(t.dep_type)) {
@@ -143,8 +140,6 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
             return arr.includes(departmentType);
           });
 
-          console.log(template, "templatetemplatetemplate")
-
           if (!template) {
             return (
               <div style={{ pageBreakAfter: "always" }}>
@@ -182,7 +177,6 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
           const footerBlocks = template.content_blocks
             .filter((item: any) => item.isVisible && item.location === "footer")
             .map((block: any) => mapValueToBlock(block, mappingSource));
-          console.log(footerBlocks, "footerBlocksfooterBlocks")
 
           if (!contentBlock) {
             return (

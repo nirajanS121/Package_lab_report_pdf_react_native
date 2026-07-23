@@ -19,11 +19,6 @@ export interface WrappedLine {
 
 export type FontResolver = (bold?: boolean, italic?: boolean) => PDFFont;
 
-/**
- * Wraps a sequence of styled runs (mixed bold/italic within one paragraph)
- * into lines that fit maxWidth, splitting on whitespace and respecting
- * explicit "\n" breaks within a run's own text.
- */
 export function wrapRuns(
   runs: TextRun[],
   fontSize: number,
@@ -49,7 +44,11 @@ export function wrapRuns(
       for (const token of tokens) {
         const tokenWidth = font.widthOfTextAtSize(token, fontSize);
         const isWhitespace = token.trim().length === 0;
-        if (!isWhitespace && currentLine.length > 0 && currentWidth + tokenWidth > maxWidth) {
+        if (
+          !isWhitespace &&
+          currentLine.length > 0 &&
+          currentWidth + tokenWidth > maxWidth
+        ) {
           pushLine();
         }
         currentLine.push({ text: token, font, bold: run.bold });
@@ -69,9 +68,18 @@ export function wrapPlainText(
 ): string[] {
   if (!text) return [];
   const wrapped = wrapRuns([{ text }], fontSize, maxWidth, () => font);
-  return wrapped.map((line) => line.runs.map((r) => r.text).join("").replace(/\s+$/, ""));
+  return wrapped.map((line) =>
+    line.runs
+      .map((r) => r.text)
+      .join("")
+      .replace(/\s+$/, ""),
+  );
 }
 
-export function measureWidth(text: string, font: PDFFont, fontSize: number): number {
+export function measureWidth(
+  text: string,
+  font: PDFFont,
+  fontSize: number,
+): number {
   return font.widthOfTextAtSize(text, fontSize);
 }

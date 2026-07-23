@@ -4,11 +4,6 @@ import ExeBlockRender from "../exe-block-render";
 import { isColorWatermark, isImageWatermark } from "../type-guard";
 import BlockRender from "../block-render";
 
-// uuid's v4() requires crypto.getRandomValues, which Hermes doesn't provide
-// without installing a native polyfill module (react-native-get-random-values)
-// and rebuilding the app. These two ids are just per-render signature-block
-// tracking keys, not anything security-sensitive, so a plain non-crypto id
-// avoids that dependency entirely.
 function renderPassId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
@@ -32,8 +27,8 @@ interface Props {
   isExePrint?: boolean;
   currentPage?: number;
   previewWatermarkObject?: any;
-  processedUsernames?: any
-  footerNotFixedForceFully?: any
+  processedUsernames?: any;
+  footerNotFixedForceFully?: any;
 }
 
 export const PageRender: React.FC<Props> = (props) => {
@@ -51,16 +46,10 @@ export const PageRender: React.FC<Props> = (props) => {
     isExePrint,
     previewWatermarkObject,
     processedUsernames,
-    footerNotFixedForceFully
-    // currentPage,
+    footerNotFixedForceFully,
   } = props;
-  console.log(processedUsernames, orientationNotSet, "processedUsernamesprocessedUsernamesprocessedUsernames")
-  // console.log(printTextWaterMark,"printTextWaterMarkprintTextWaterMark")
-  // console.log(headerImage,"headerImageheaderImageheaderImageheaderImage")
 
   const { headerBlocks, footerBlocks, contentBlock, contentX, config } = props;
-  // !isVerifyEmail
-  // !isVerifyEmail
   const { height, width, header, footer } = config;
   const headerImageHeight =
     headerImage && config?.printPreference?.printWithImage
@@ -74,8 +63,8 @@ export const PageRender: React.FC<Props> = (props) => {
   const footerHeight = footer?.isEnabled ? footer?.height : footerImageHeight;
   const footerStart = height - footerHeight;
 
-  // Watermark opacity should be decreased by the factor of page length; as the watermark's stack for every page
-  const watermarkOpacity = (config?.watermark?.opacity ?? 0) * (0.01 / totalPages);
+  const watermarkOpacity =
+    (config?.watermark?.opacity ?? 0) * (0.01 / totalPages);
   const defaultPrintPreference: any = {
     printWithImage: false,
 
@@ -89,12 +78,16 @@ export const PageRender: React.FC<Props> = (props) => {
 
     const watermarkWidth = paperMinDimension * 0.9;
 
-    const watermarkHeight = (watermarkWidth / watermark?.width) * watermark?.height;
+    const watermarkHeight =
+      (watermarkWidth / watermark?.width) * watermark?.height;
 
     return { watermarkWidth, watermarkHeight };
   };
 
-  const { watermarkWidth, watermarkHeight } = calculateWatermarkSize(config, watermark);
+  const { watermarkWidth, watermarkHeight } = calculateWatermarkSize(
+    config,
+    watermark,
+  );
   if (typeof window !== "undefined" && typeof document !== "undefined") {
     window.onbeforeprint = () => {
       document.querySelectorAll("img").forEach((img) => {
@@ -102,47 +95,21 @@ export const PageRender: React.FC<Props> = (props) => {
       });
     };
   }
-  console.log(headerImage, "headerImageheaderImage")
   const dynamicCalculateHeight = config?.header?.height;
   const dynamicCalculateFooter = config?.footer?.height;
   const getCurrentFooterSign = renderPassId();
   const getCurrentFooterSignHeader = renderPassId();
-  console.log(getCurrentFooterSign, getCurrentFooterSignHeader, "getCurrentFooterSignHeadergetCurrentFooterSignHeader")
-  console.log(getCurrentFooterSign, "getCurrentFooterSigngetCurrentFooterSigngetCurrentFooterSigngetCurrentFooterSign")
 
-  console.log(printPreference.last_page_footer_only, "printPreference.isFooterFixed")
-  console.log(footerStart, "footerStartfooterStartfooterStartfooterStart")
-  console.log(footer?.isEnabled, "footer?.isEnabled")
-  console.log(printPreference?.second_page_margin, "configconfigconfig")
-  //   <style>
-  //   {`
-  // @media print {
-  // @page {
-  // size: ${config?.width}px ${config?.height}px;
-  // aspect-ratio: 2 / 3;
-  // margin: 0;
-  // @bottom-right {
-  // content: "Page: " counter(page) " of " counter(pages);
-  // font-size: 8px;
-  // padding-right:10px;
-  // color: #000000;
-  // }
-
-  // }
-  // `}
-  // </style>
-  // console.log(printPreference?.printWithImage, "printPreference?.printWithImage printPreference?.printWithImage")
   return (
     <>
-      {
-        //@ts-ignore
-        config?.page_size === "A5" && !orientationNotSet && printPreference?.is_browser_pagination ? (
-          <style>
-            {`
+      {config?.page_size === "A5" &&
+      !orientationNotSet &&
+      printPreference?.is_browser_pagination ? (
+        <style>
+          {`
       @media print {
         @page {
                   size: A5 ${config?.orientation?.toLowerCase()};
-          // size: A5 landscape;
           margin: 0.22cm;
            }
         }
@@ -156,228 +123,243 @@ export const PageRender: React.FC<Props> = (props) => {
     }
   }
         `}
-          </style>
-        ) : (
-          //@ts-ignore
-          config?.page_size === "A4" &&
-          !orientationNotSet && printPreference?.is_browser_pagination && (
-            <style>
-              {`
+        </style>
+      ) : (
+        config?.page_size === "A4" &&
+        !orientationNotSet &&
+        printPreference?.is_browser_pagination && (
+          <style>
+            {`
                  @page {
     @bottom-right {
       content: "Page: " counter(page) " of " counter(pages);
       font-size: 14px;
-      // margin-bottom:40px;
-      // padding-right:15px;
       color: #000000;
     }
   }
 
   `}
-            </style>
-          )
-        )}
+          </style>
+        )
+      )}
       <div
         style={{
-          // minHeight: config.height,
           maxWidth: config?.width,
           width: config?.width,
           pageBreakAfter: "auto",
           ...(printPreference?.isFooterFixed && { position: "relative" }),
           backgroundColor:
-            watermark && isColorWatermark(watermark) && config.printPreference?.printWithImage && !isVerifyEmail
+            watermark &&
+            isColorWatermark(watermark) &&
+            config.printPreference?.printWithImage &&
+            !isVerifyEmail
               ? watermark.name
               : "white",
-          // fontFamily: "Verdana",
         }}
-      // className="font-verdana"
       >
-        {config.page_size === "A4" && printPreference?.is_browser_pagination && <></>}
-        {(onlyPreviewWatermark ||
-          printTextWaterMark) && (
-            <WatermarkOverlay
-              show={onlyPreviewWatermark ||
-                printTextWaterMark}
-              text={printTextWaterMark ?? "PREVIEW"}
-              fontSize={previewWatermarkObject?.fontSize ?? 26}
-              opacity={previewWatermarkObject?.opacity ?? 0.2}
-              rotation={previewWatermarkObject?.rotation ?? -45}
-              gapX={previewWatermarkObject?.gapX ?? 200}
-              gapY={previewWatermarkObject?.gapY ?? 120}
-            />
-          )}
-        {watermark && printPreference.printWithImage && !isVerifyEmail && isImageWatermark(watermark) && (
-          <img
-            src={watermark.name}
-            width={watermarkWidth}
-            height={watermarkHeight}
-            loading="lazy"
-            // alt="Watermark"
-            style={{
-              position: "fixed",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-              objectFit: "contain",
-              objectPosition: "center",
-              opacity: watermarkOpacity,
-              pointerEvents: "none",
-              zIndex: 9999,
-            }}
+        {config.page_size === "A4" &&
+          printPreference?.is_browser_pagination && <></>}
+        {(onlyPreviewWatermark || printTextWaterMark) && (
+          <WatermarkOverlay
+            show={onlyPreviewWatermark || printTextWaterMark}
+            text={printTextWaterMark ?? "PREVIEW"}
+            fontSize={previewWatermarkObject?.fontSize ?? 26}
+            opacity={previewWatermarkObject?.opacity ?? 0.2}
+            rotation={previewWatermarkObject?.rotation ?? -45}
+            gapX={previewWatermarkObject?.gapX ?? 200}
+            gapY={previewWatermarkObject?.gapY ?? 120}
           />
         )}
-        {config.page_size === "A4" && !onlyPreviewWatermark && !isVerifyEmail && (
-          <div
-            style={{
-              fontSize: "16px",
-            }}
-          >
-            <div className={`${config.page_size === "A4" && !onlyPreviewWatermark && `header-${getCurrentFooterSignHeader}`} `}>
+        {watermark &&
+          printPreference.printWithImage &&
+          !isVerifyEmail &&
+          isImageWatermark(watermark) && (
+            <img
+              src={watermark.name}
+              width={watermarkWidth}
+              height={watermarkHeight}
+              loading="lazy"
+              style={{
+                position: "fixed",
+                left: "50%",
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+                objectFit: "contain",
+                objectPosition: "center",
+                opacity: watermarkOpacity,
+                pointerEvents: "none",
+                zIndex: 9999,
+              }}
+            />
+          )}
+        {config.page_size === "A4" &&
+          !onlyPreviewWatermark &&
+          !isVerifyEmail && (
+            <div
+              style={{
+                fontSize: "16px",
+              }}
+            >
               <div
-                style={{
-                  height: onlyPreviewWatermark
-                    ? "auto"
-                    : printPreference.isFooterFixed && !suffix
-                      ? headerHeight - 19
-                      : footer?.isEnabled && !isVerifyEmail && footerImage?.name && !suffix
-                        ? headerHeight + 25
-                        : headerHeight,
-                  width: "100%",
-                  position: "relative",
-                }}
+                className={`${config.page_size === "A4" && !onlyPreviewWatermark && `header-${getCurrentFooterSignHeader}`} `}
               >
-                {header?.isEnabled && !isVerifyEmail && headerImage?.name && printPreference.printWithImage && (
-                  <>
-                    <img
-                      src={headerImage.name}
-                      width={headerImage.width}
-                      height={headerImage.height}
-                      loading="lazy"
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        zIndex: 0,
-                        objectFit: "cover",
-                        objectPosition: "center",
-                        // transform: `scale(${width / headerImage.width})`,
-                        transformOrigin: "top left",
-                      }}
-                    // alt="Header"
-                    />
-                  </>
-                )}
-                {!onlyPreviewWatermark &&
-                  headerBlocks?.map((block) => (
-                    <div
-                      key={block.key}
-                      style={{
-                        left: `${block.x}px`,
-                        top: `${block.y}px`,
-                        boxSizing: "border-box",
-                        whiteSpace: "nowrap",
-                        textAlign: "center",
-                        position: "absolute",
-                        display: block.isVisible ? "block" : "none",
-                      }}
-                    >
-                      {isExePrint ? (
-                        <ExeBlockRender block={block} logoImage={logoImage} maxWidth={width} />
-                      ) : (
-                        <BlockRender block={block} logoImage={logoImage} maxWidth={width} />
-                      )}
-                    </div>
-                  ))}
-              </div>
-            </div>
-            {!printPreference?.last_page_footer_only && (
-              <div className={`${config.page_size === "A4" && `footer-${getCurrentFooterSign}`}`}>
-                <div>
-                  {!onlyPreviewWatermark && (
-                    <div
-                      style={{
-                        height: printPreference.isFooterFixed
-                          ? "auto"
-                          : footer?.isEnabled && !isVerifyEmail && footerImage?.name
-                            ? footerHeight - footerImageHeight
-                            : footerHeight,
-                        // bottom: printPreference.isFooterFixed ? "auto" : "auto",
-                        width: width,
-                        // position: "relative",
-                        ...(footer?.isEnabled &&
-                          !isVerifyEmail &&
-                          !suffix &&
-                          footerImage?.name &&
-                        {
-                          // top: -25,
-                        }),
-                      }}
-                    >
+                <div
+                  style={{
+                    height: onlyPreviewWatermark
+                      ? "auto"
+                      : printPreference.isFooterFixed && !suffix
+                        ? headerHeight - 19
+                        : footer?.isEnabled &&
+                            !isVerifyEmail &&
+                            footerImage?.name &&
+                            !suffix
+                          ? headerHeight + 25
+                          : headerHeight,
+                    width: "100%",
+                    position: "relative",
+                  }}
+                >
+                  {header?.isEnabled &&
+                    !isVerifyEmail &&
+                    headerImage?.name &&
+                    printPreference.printWithImage && (
                       <>
-                        {footerBlocks?.map((block) => (
-                          <div
-                            key={block.key}
-                            style={{
-                              left: `${block.x}px`,
-                              top: `${block.y}px`,
-                              boxSizing: "border-box",
-                              whiteSpace: "nowrap",
-                              textAlign: "center",
-                              position: "absolute",
-                              display: block.isVisible ? "block" : "none",
-                            }}
-                          >
-                            {isExePrint ? (
-                              <ExeBlockRender block={block} maxWidth={width} />
-                            ) : (
-                              <BlockRender block={block} maxWidth={width} />
-                            )}
-                          </div>
-                        ))}
+                        <img
+                          src={headerImage.name}
+                          width={headerImage.width}
+                          height={headerImage.height}
+                          loading="lazy"
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            zIndex: 0,
+                            objectFit: "cover",
+                            objectPosition: "center",
+                            transformOrigin: "top left",
+                          }}
+                        />
                       </>
-                    </div>
-                  )}
-                  {onlyPreviewWatermark && (
-                    <div
-                      style={{
-                        height: "1.5px",
-                        backgroundColor: "#ccc",
-                        margin: "20px 0",
-                        width: "100%",
-                      }}
-                    />
-                  )}
-                </div>
-                {footer?.isEnabled &&
-                  footerImage?.name &&
-                  printPreference?.printWithImage &&
-                  !isVerifyEmail &&
-                  !onlyPreviewWatermark && (
-                    <>
-                      <img
-                        src={footerImage?.name}
-                        width={footerImage?.width}
-                        height={footerImage?.height}
-                        loading="lazy"
-                        // alt="Footer"
+                    )}
+                  {!onlyPreviewWatermark &&
+                    headerBlocks?.map((block) => (
+                      <div
+                        key={block.key}
                         style={{
-                          position: "fixed",
-                          bottom: 0,
-                          left: 0,
-                          zIndex: 0,
-                          objectFit: "cover",
-                          objectPosition: "center",
-                          // transform: `scale(${width / footerImage?.width})`,
-                          transformOrigin: "bottom left",
+                          left: `${block.x}px`,
+                          top: `${block.y}px`,
+                          boxSizing: "border-box",
+                          whiteSpace: "nowrap",
+                          textAlign: "center",
+                          position: "absolute",
+                          display: block.isVisible ? "block" : "none",
+                        }}
+                      >
+                        {isExePrint ? (
+                          <ExeBlockRender
+                            block={block}
+                            logoImage={logoImage}
+                            maxWidth={width}
+                          />
+                        ) : (
+                          <BlockRender
+                            block={block}
+                            logoImage={logoImage}
+                            maxWidth={width}
+                          />
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+              {!printPreference?.last_page_footer_only && (
+                <div
+                  className={`${config.page_size === "A4" && `footer-${getCurrentFooterSign}`}`}
+                >
+                  <div>
+                    {!onlyPreviewWatermark && (
+                      <div
+                        style={{
+                          height: printPreference.isFooterFixed
+                            ? "auto"
+                            : footer?.isEnabled &&
+                                !isVerifyEmail &&
+                                footerImage?.name
+                              ? footerHeight - footerImageHeight
+                              : footerHeight,
+                          width: width,
+                          ...(footer?.isEnabled &&
+                            !isVerifyEmail &&
+                            !suffix &&
+                            footerImage?.name &&
+                            {}),
+                        }}
+                      >
+                        <>
+                          {footerBlocks?.map((block) => (
+                            <div
+                              key={block.key}
+                              style={{
+                                left: `${block.x}px`,
+                                top: `${block.y}px`,
+                                boxSizing: "border-box",
+                                whiteSpace: "nowrap",
+                                textAlign: "center",
+                                position: "absolute",
+                                display: block.isVisible ? "block" : "none",
+                              }}
+                            >
+                              {isExePrint ? (
+                                <ExeBlockRender
+                                  block={block}
+                                  maxWidth={width}
+                                />
+                              ) : (
+                                <BlockRender block={block} maxWidth={width} />
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      </div>
+                    )}
+                    {onlyPreviewWatermark && (
+                      <div
+                        style={{
+                          height: "1.5px",
+                          backgroundColor: "#ccc",
+                          margin: "20px 0",
+                          width: "100%",
                         }}
                       />
-
-                    </>
-                  )}
-              </div>
-            )}
-          </div>
-        )}
+                    )}
+                  </div>
+                  {footer?.isEnabled &&
+                    footerImage?.name &&
+                    printPreference?.printWithImage &&
+                    !isVerifyEmail &&
+                    !onlyPreviewWatermark && (
+                      <>
+                        <img
+                          src={footerImage?.name}
+                          width={footerImage?.width}
+                          height={footerImage?.height}
+                          loading="lazy"
+                          style={{
+                            position: "fixed",
+                            bottom: 0,
+                            left: 0,
+                            zIndex: 0,
+                            objectFit: "cover",
+                            objectPosition: "center",
+                            transformOrigin: "bottom left",
+                          }}
+                        />
+                      </>
+                    )}
+                </div>
+              )}
+            </div>
+          )}
         <table
           className={`${config.page_size === "A4" && "print-table"}`}
           style={{
@@ -390,7 +372,9 @@ export const PageRender: React.FC<Props> = (props) => {
                 {config.page_size === "A4" && !isVerifyEmail ? (
                   <tr>
                     <td>
-                      <div className={`${config.page_size === "A4" && !onlyPreviewWatermark && `header-space-${getCurrentFooterSignHeader}`}`}></div>
+                      <div
+                        className={`${config.page_size === "A4" && !onlyPreviewWatermark && `header-space-${getCurrentFooterSignHeader}`}`}
+                      ></div>
                     </td>
                   </tr>
                 ) : (
@@ -407,9 +391,9 @@ export const PageRender: React.FC<Props> = (props) => {
                         position: "relative",
                       }}
                     >
-                      {header?.isEnabled && headerImage?.name && (printPreference.printWithImage || isVerifyEmail)
-                        //  && !isVerifyEmail
-                        && (
+                      {header?.isEnabled &&
+                        headerImage?.name &&
+                        (printPreference.printWithImage || isVerifyEmail) && (
                           <>
                             <div
                               style={{
@@ -444,9 +428,17 @@ export const PageRender: React.FC<Props> = (props) => {
                           }}
                         >
                           {isExePrint ? (
-                            <ExeBlockRender block={block} logoImage={logoImage} maxWidth={width} />
+                            <ExeBlockRender
+                              block={block}
+                              logoImage={logoImage}
+                              maxWidth={width}
+                            />
                           ) : (
-                            <BlockRender block={block} logoImage={logoImage} maxWidth={width} />
+                            <BlockRender
+                              block={block}
+                              logoImage={logoImage}
+                              maxWidth={width}
+                            />
                           )}
                         </div>
                       ))}
@@ -458,22 +450,11 @@ export const PageRender: React.FC<Props> = (props) => {
             <>
               <tbody
                 style={{
-                  ...(printPreference.isFooterFixed &&
-                  {
-                    // minHeight: `${config?.height - contentY - footerHeight}px`,
-                    // maxHeight: `100%`,
-                    // verticalAlign: "top",
-                    // display: "flex",
-                    // flexDirection: "column",
-                  }),
+                  ...printPreference.isFooterFixed,
                   ...(footer?.isEnabled &&
                     !isVerifyEmail &&
                     !suffix &&
-                    footerImage?.name &&
-                  {
-                    // position: "relative",
-                    // top: -25,
-                  }),
+                    footerImage?.name),
                 }}
               >
                 <>
@@ -493,9 +474,10 @@ export const PageRender: React.FC<Props> = (props) => {
                           }}
                         >
                           {contentBlock}
-                          {suffix && <div style={{ marginLeft: 8 }}>{suffix}</div>}
+                          {suffix && (
+                            <div style={{ marginLeft: 8 }}>{suffix}</div>
+                          )}
                         </div>
-
                       </div>
                     </td>
                   </tr>
@@ -503,12 +485,13 @@ export const PageRender: React.FC<Props> = (props) => {
               </tbody>
               {!onlyPreviewWatermark && (
                 <tfoot className="w-full">
-
                   {config.page_size === "A4" && !isVerifyEmail ? (
                     !printPreference?.last_page_footer_only && (
                       <tr>
                         <td>
-                          <div className={`${config.page_size === "A4" && `footer-space-${getCurrentFooterSign}`}`}></div>
+                          <div
+                            className={`${config.page_size === "A4" && `footer-space-${getCurrentFooterSign}`}`}
+                          ></div>
                         </td>
                       </tr>
                     )
@@ -518,19 +501,17 @@ export const PageRender: React.FC<Props> = (props) => {
                         style={{
                           height: printPreference.isFooterFixed
                             ? "auto"
-                            : footer?.isEnabled && !isVerifyEmail && footerImage?.name
+                            : footer?.isEnabled &&
+                                !isVerifyEmail &&
+                                footerImage?.name
                               ? footerHeight - footerImageHeight
                               : footerHeight,
-                          // bottom: printPreference.isFooterFixed ? footerImage?.height : "auto",
                           width: width,
                           position: "relative",
                           ...(footer?.isEnabled &&
                             !isVerifyEmail &&
                             !suffix &&
-                            footerImage?.name &&
-                          {
-                            // top: -25,
-                          }),
+                            footerImage?.name),
                         }}
                       >
                         <>
@@ -548,7 +529,10 @@ export const PageRender: React.FC<Props> = (props) => {
                               }}
                             >
                               {isExePrint ? (
-                                <ExeBlockRender block={block} maxWidth={width} />
+                                <ExeBlockRender
+                                  block={block}
+                                  maxWidth={width}
+                                />
                               ) : (
                                 <BlockRender block={block} maxWidth={width} />
                               )}
@@ -577,7 +561,6 @@ export const PageRender: React.FC<Props> = (props) => {
         {footer?.isEnabled &&
           footerImage?.name &&
           (printPreference.printWithImage || isVerifyEmail) &&
-          // !isVerifyEmail &&
           !onlyPreviewWatermark && (
             <>
               <img
@@ -585,7 +568,6 @@ export const PageRender: React.FC<Props> = (props) => {
                 width={footerImage?.width}
                 height={footerImage?.height}
                 loading="lazy"
-                // alt="Footer"
                 style={{
                   position: "fixed",
                   bottom: 0,
@@ -626,7 +608,6 @@ export const PageRender: React.FC<Props> = (props) => {
         @media print {
           body, p, h1, h2, h3, h4, h5, h6, span, a, li, td, th, input, textarea, button {
             font-family: Verdana !important;
-            // line-height:14px;
           }
 
         .header-${getCurrentFooterSignHeader} {
@@ -654,13 +635,3 @@ export const PageRender: React.FC<Props> = (props) => {
     </>
   );
 };
-
-// .header-${getCurrentFooterSignHeader}-${getCurrentFooterSignHeader} {
-//   top: 0;
-//   height: ${dynamicCalculateHeight}px;
-// }
-
-// .footer-${getCurrentFooterSign}-${getCurrentFooterSign} {
-//   bottom: 0;
-//   height: ${dynamicCalculateFooter}px;
-// }

@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { WebView } from "react-native-webview";
 import * as Print from "expo-print";
 import { File, Paths } from "expo-file-system";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 import { renderReportHtml, renderReportPdf } from "./index";
+import { fetchImage } from "./pdf/fetchImage";
 import type { PrintMapperProps } from "./ReportPrintMapper";
 
 export interface ReportWebViewProps extends PrintMapperProps {
@@ -48,4 +50,40 @@ export async function printReport(props: PrintMapperProps) {
 
 export async function reportToPdf(props: PrintMapperProps) {
   return writePdfToFile(props, `report-${Date.now()}.pdf`);
+}
+
+let pdfEnginePrewarmed = false;
+
+export function prewarmPdfEngine(): void {
+  if (pdfEnginePrewarmed) return;
+  pdfEnginePrewarmed = true;
+  PDFDocument.create()
+    .then((doc) =>
+      Promise.all([
+        doc.embedFont(StandardFonts.Helvetica),
+        doc.embedFont(StandardFonts.HelveticaBold),
+        doc.embedFont(StandardFonts.HelveticaOblique),
+        doc.embedFont(StandardFonts.HelveticaBoldOblique),
+      ]),
+    )
+    .catch(() => {});
+}
+
+export function prewarmImages(urls: Array<string | null | undefined>): void {
+  for (const url of urls) {
+    if (url) fetchImage(url);
+  }
+}
+
+export function prewarmReportAssets(props: {
+  headerImage?: { name?: string };
+  footerImage?: { name?: string };
+  watermark?: { name?: string };
+}): void {
+  prewarmPdfEngine();
+  prewarmImages([
+    props.headerImage?.name,
+    props.footerImage?.name,
+    props.watermark?.name,
+  ]);
 }

@@ -22,6 +22,8 @@ export async function renderReportPdf(
     signatures,
     pageBreakRule = "0",
     printTemplateDesign,
+    hideHeader,
+    hideFooter,
   } = props;
 
   const templates = printTemplateDesign;
@@ -102,6 +104,8 @@ export async function renderReportPdf(
       watermark,
       headerBlocks,
       footerBlocks,
+      hideHeader,
+      hideFooter,
     });
     await pageManager.start();
 

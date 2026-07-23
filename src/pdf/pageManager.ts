@@ -14,6 +14,8 @@ interface HeaderFooterConfig {
   watermark?: any;
   headerBlocks: any[];
   footerBlocks: any[];
+  hideHeader?: boolean;
+  hideFooter?: boolean;
 }
 
 export class PageManager {
@@ -66,22 +68,28 @@ export class PageManager {
       watermark,
       headerBlocks,
       footerBlocks,
+      hideHeader,
+      hideFooter,
     } = this.hf;
     const printPreference = config?.printPreference ?? {};
 
-    const wantsHeader = printPreference.printWithImage && !!headerImage?.name;
-    const wantsFooter = printPreference.printWithImage && !!footerImage?.name;
+    const wantsHeader =
+      !hideHeader && printPreference.printWithImage && !!headerImage?.name;
+    const wantsFooter =
+      !hideFooter && printPreference.printWithImage && !!footerImage?.name;
     const wantsWatermark =
       !!watermark?.name &&
       printPreference.printWithImage &&
       typeof watermark.width === "number";
+    const drawnHeaderBlocks = hideHeader ? [] : headerBlocks;
+    const drawnFooterBlocks = hideFooter ? [] : footerBlocks;
 
     const [headerEmbedded, footerEmbedded, watermarkEmbedded] =
       await Promise.all([
         wantsHeader ? embedImageBytes(this.ctx, headerImage.name) : null,
         wantsFooter ? embedImageBytes(this.ctx, footerImage.name) : null,
         wantsWatermark ? embedImageBytes(this.ctx, watermark.name) : null,
-        warmBlockImageCache(this.ctx, [...headerBlocks, ...footerBlocks]),
+        warmBlockImageCache(this.ctx, [...drawnHeaderBlocks, ...drawnFooterBlocks]),
       ]);
 
     if (wantsHeader && headerEmbedded) {
@@ -119,10 +127,10 @@ export class PageManager {
       });
     }
 
-    for (const block of headerBlocks) {
+    for (const block of drawnHeaderBlocks) {
       await drawBasicBlock(this.page, this.ctx, this.pageHeight, block);
     }
-    for (const block of footerBlocks) {
+    for (const block of drawnFooterBlocks) {
       await drawBasicBlock(this.page, this.ctx, this.pageHeight, block);
     }
   }

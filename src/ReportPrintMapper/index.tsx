@@ -28,6 +28,8 @@ export interface PrintMapperProps {
   orientationNotSet?: any;
   footerNotFixedForceFully?: any;
   printTemplateDesign?: any;
+  hideHeader?: boolean;
+  hideFooter?: boolean;
 }
 
 export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
@@ -47,14 +49,14 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
     previewWatermarkObject,
     orientationNotSet,
     footerNotFixedForceFully,
-    printTemplateDesign
+    printTemplateDesign,
   } = props;
 
   const templates = printTemplateDesign;
   const getRules: any[] = [];
   const pages = getPages(table_data, signatures, pageBreakRule);
   const isTitleDescHorizontal = getRules?.some(
-    (row: any) => row?.key === "title_desc_vertical" && row?.value === "0"
+    (row: any) => row?.key === "title_desc_vertical" && row?.value === "0",
   );
 
   const departmentTypeDirect = pages?.[0]?.[0]?.department_type ?? null;
@@ -68,7 +70,6 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
   return (
     <div className={htmlPreview ? "" : "hidden"}>
       <div ref={ref} className="report-container">
-
         {config?.page_size === "A5" && !orientationNotSet ? (
           <style>{`
             @media print {
@@ -146,7 +147,9 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
           };
 
           const headerBlocks = template.content_blocks
-            .filter((block: any) => block.isVisible && block.location === "header")
+            .filter(
+              (block: any) => block.isVisible && block.location === "header",
+            )
             .map((block: any) => mapValueToBlock(block, mappingSource));
 
           const contentBlock = template.content_blocks
@@ -166,11 +169,15 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
           }
 
           const lastPageRenderBlockFooter = footerBlocks?.filter(
-            (row: any) => row?.frontendConditionValue === "last_page_render"
+            (row: any) => row?.frontendConditionValue === "last_page_render",
           );
 
           return (
-            <div style={{ pageBreakAfter: pages.length !== index + 1 ? "always" : "auto" }}>
+            <div
+              style={{
+                pageBreakAfter: pages.length !== index + 1 ? "always" : "auto",
+              }}
+            >
               <PageRender
                 footerNotFixedForceFully={footerNotFixedForceFully}
                 previewWatermarkObject={previewWatermarkObject}
@@ -184,7 +191,8 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
                 watermark={watermark}
                 headerBlocks={headerBlocks}
                 footerBlocks={footerBlocks?.filter(
-                  (row: any) => row?.frontendConditionValue !== "last_page_render"
+                  (row: any) =>
+                    row?.frontendConditionValue !== "last_page_render",
                 )}
                 contentX={contentBlock.x}
                 contentY={contentBlock.y}
@@ -198,10 +206,14 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
                         data: getTableContent(page, pageBreakRule),
                       }}
                       lastPageContent={
-                        pages.length === index + 1 ? lastPageRenderBlockFooter : null
+                        pages.length === index + 1
+                          ? lastPageRenderBlockFooter
+                          : null
                       }
                       lineHeight={lineHeight}
-                      isFooterFixed={templateConfig?.printPreference?.isFooterFixed}
+                      isFooterFixed={
+                        templateConfig?.printPreference?.isFooterFixed
+                      }
                       maxWidth={templateConfig.width}
                       onlyPreviewWatermark={onlyPreviewWatermark}
                     />
@@ -213,12 +225,15 @@ export const ReportPrintMapper = forwardRef<any, any>((props, ref) => {
                       }}
                       footerImage={footerImage}
                       footerBlocks={footerBlocks?.filter(
-                        (row: any) => row?.frontendConditionValue !== "last_page_render"
+                        (row: any) =>
+                          row?.frontendConditionValue !== "last_page_render",
                       )}
                       config={templateConfig}
                       printPreference={templateConfig?.printPreference}
                       lastPageContent={
-                        pages.length === index + 1 ? lastPageRenderBlockFooter : null
+                        pages.length === index + 1
+                          ? lastPageRenderBlockFooter
+                          : null
                       }
                       isTitleDescHorizontal={isTitleDescHorizontal}
                       maxWidth={templateConfig.width}

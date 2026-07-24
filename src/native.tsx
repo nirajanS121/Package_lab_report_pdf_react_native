@@ -36,7 +36,7 @@ async function writePdfToFile(
   fileName: string,
 ): Promise<string> {
   const bytes = await renderReportPdf(props);
-  const file = new File(Paths.cache, fileName);
+  const file = new File(Paths.document, fileName);
   if (file.exists) file.delete();
   file.create();
   file.write(bytes);

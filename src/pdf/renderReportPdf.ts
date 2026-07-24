@@ -6,7 +6,11 @@ import {
 } from "../helper";
 import { getTableContent } from "../ReportPrintMapper/helper";
 import type { PrintMapperProps } from "../ReportPrintMapper";
-import { createPdfContext } from "./blocks";
+import {
+  createPdfContext,
+  embedImageBytes,
+  warmBlockImageCache,
+} from "./blocks";
 import { PageManager } from "./pageManager";
 import { drawPathoTable } from "./pathoTable";
 
@@ -48,8 +52,7 @@ export async function renderReportPdf(
     return pdfDoc.save();
   }
 
-  for (let index = 0; index < pages.length; index++) {
-    const page = pages[index];
+  const preparedPages = pages.map((page, index) => {
     const departmentType = page[0].department_type;
     const departmentName = page[0].department_name;
     const agentName = page[0].agent_name;
@@ -58,14 +61,7 @@ export async function renderReportPdf(
 
     const template = findTemplateForDepartmentType(templates, departmentType);
     if (!template) {
-      const pdfPage = pdfDoc.addPage([595, 842]);
-      pdfPage.drawText(`${departmentType} Template Not Found`, {
-        x: 40,
-        y: 800,
-        size: 14,
-        font: ctx.fonts.regular,
-      });
-      continue;
+      return { page, departmentType, template: null } as const;
     }
 
     const templateConfig = template.editor_config;
@@ -94,6 +90,51 @@ export async function renderReportPdf(
       .filter((item: any) => item.isVisible && item.location === "footer")
       .map((block: any) => mapValueToBlock(block, mappingSource))
       .filter((row: any) => row?.frontendConditionValue !== "last_page_render");
+
+    return {
+      page,
+      departmentType,
+      departmentName,
+      template,
+      templateConfig,
+      contentBlock,
+      headerBlocks,
+      footerBlocks,
+    } as const;
+  });
+
+  const allHeaderFooterBlocks = preparedPages.flatMap((p) =>
+    p.template ? [...p.headerBlocks, ...p.footerBlocks] : [],
+  );
+
+  await Promise.all([
+    headerImage?.name ? embedImageBytes(ctx, headerImage.name) : null,
+    footerImage?.name ? embedImageBytes(ctx, footerImage.name) : null,
+    watermark?.name ? embedImageBytes(ctx, watermark.name) : null,
+    warmBlockImageCache(ctx, allHeaderFooterBlocks),
+  ]);
+
+  for (const prepared of preparedPages) {
+    if (!prepared.template) {
+      const pdfPage = pdfDoc.addPage([595, 842]);
+      pdfPage.drawText(`${prepared.departmentType} Template Not Found`, {
+        x: 40,
+        y: 800,
+        size: 14,
+        font: ctx.fonts.regular,
+      });
+      continue;
+    }
+
+    const {
+      page,
+      departmentType,
+      departmentName,
+      templateConfig,
+      contentBlock,
+      headerBlocks,
+      footerBlocks,
+    } = prepared;
 
     if (!contentBlock) continue;
 

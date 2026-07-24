@@ -40,9 +40,16 @@ export function topToPdfY(pageHeight: number, templateY: number): number {
 }
 
 export async function embedImageBytes(ctx: PdfContext, url: string) {
-  if (ctx.imageCache.has(url)) return ctx.imageCache.get(url)!;
+  if (ctx.imageCache.has(url)) {
+    console.log(`[lab-pdf-view] embedImageBytes ctx-cache hit: ${url}`);
+    return ctx.imageCache.get(url)!;
+  }
 
+  const t0 = Date.now();
   const fetched = await fetchImage(url);
+  console.log(
+    `[lab-pdf-view] fetchImage(${url}) took ${Date.now() - t0}ms, ok=${!!fetched}`,
+  );
   let embedded = null;
   if (fetched) {
     try {
